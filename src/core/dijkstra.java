@@ -1,3 +1,4 @@
+package core;
 import net_info.network;
 
 /**
@@ -28,7 +29,10 @@ public class dijkstra {
 	 */
 	
 	public static network pareto_opt(network netw){
-		network new_netw = null;
+		network new_netw = netw.clone();
+		
+		// TODO Method implementations here
+		
 		return new_netw;
 	}
 	

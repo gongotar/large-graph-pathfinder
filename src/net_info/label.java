@@ -5,6 +5,8 @@ package net_info;
 
 import java.util.ArrayList;
 
+import javax.xml.datatype.Duration;
+
 /**
  * @author Masoud Gholami
  *
@@ -12,9 +14,10 @@ import java.util.ArrayList;
 public class label {
 	
 	private ArrayList<connection<edge, Integer>> path;
-	private int				duration;
-	private int				change;
-	private double			risk;
+	private Duration		duration;
+	private int		change;
+	private double	risk;
+	private double	cost;
 	
 	/*
 	 * Class constructor 
@@ -27,7 +30,7 @@ public class label {
 	/*
 	 * Class constructor 
 	 */
-	public label(label l, connection<edge, Integer> c, int duration, int change, int risk){
+	public label(label l, connection<edge, Integer> c, Duration duration, int change, int risk){
 		this(l, c);
 		this.setDuration(duration);
 		this.setChange(change);
@@ -51,14 +54,14 @@ public class label {
 	/**
 	 * @return the duration
 	 */
-	public int getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
 	/**
 	 * @param duration the duration to set
 	 */
-	public void setDuration(int duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 
@@ -88,6 +91,20 @@ public class label {
 	 */
 	public void setRisk(double risk) {
 		this.risk = risk;
+	}
+
+	/**
+	 * @return the cost
+	 */
+	public double getCost() {
+		return cost;
+	}
+
+	/**
+	 * @param cost the cost to set
+	 */
+	public void setCost(double cost) {
+		this.cost = cost;
 	}
 	
 }
