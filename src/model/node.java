@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net_info;
+package model;
 
 import java.util.ArrayList;
 
@@ -103,6 +103,16 @@ public class node {
 	 */
 	public void setLabels(ArrayList<label> labels) {
 		this.labels = new ArrayList<label>(labels);
+	}
+	
+	/*
+	 * Adds a new label to the node
+	 * 
+	 * @param	l	the new label
+	 * @see		node
+	 */
+	public void addLabel(label l){
+		this.labels.add(l);
 	}
 	
 }

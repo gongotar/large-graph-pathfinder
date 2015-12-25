@@ -1,7 +1,7 @@
 /**
  * Edge-Connection_id pair, defining the exact edge, time & line of the chosen path
  */
-package net_info;
+package model;
 
 /**
  * @author Masoud Gholami

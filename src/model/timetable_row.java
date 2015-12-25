@@ -1,13 +1,15 @@
-package net_info;
+package model;
 
-public class timetable_row <Id, Line, Cost, Start_time, End_time, Variation>{
+import java.time.LocalDateTime;
 
-	private Id 			id;
-	private Line 		line;
-	private Cost 		cost;
-	private Start_time 	start_time;
-	private End_time 	end_time;
-	private Variation 	variation;
+public class timetable_row{
+
+	private int 			id;
+	private int 			line;
+	private double 			cost;
+	private LocalDateTime 	start_time;
+	private LocalDateTime 	end_time;
+	private double 			variation;
 	
 	/*
 	 * Class constructor setting all of the class attributes
@@ -19,8 +21,8 @@ public class timetable_row <Id, Line, Cost, Start_time, End_time, Variation>{
 	 * @param	end_time	the end time of the connection
 	 * @param	variation	the duration variance (risk) of taking the connection 
 	 */
-	public timetable_row(Id id, Line line, Cost cost, Start_time start_time, 
-			End_time end_time, Variation variation){
+	public timetable_row(int id, int line, double cost, LocalDateTime start_time, 
+			LocalDateTime end_time, double variation){
 		
 		this.setId(id);
 		this.setLine(line);
@@ -34,73 +36,73 @@ public class timetable_row <Id, Line, Cost, Start_time, End_time, Variation>{
 	/**
 	 * @return the id
 	 */
-	public Id getId() {
+	public int getId() {
 		return id;
 	}
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(Id id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	/**
 	 * @return the line
 	 */
-	public Line getLine() {
+	public int getLine() {
 		return line;
 	}
 	/**
 	 * @param line the line to set
 	 */
-	public void setLine(Line line) {
+	public void setLine(int line) {
 		this.line = line;
 	}
 	/**
 	 * @return the cost
 	 */
-	public Cost getCost() {
+	public double getCost() {
 		return cost;
 	}
 	/**
 	 * @param cost the cost to set
 	 */
-	public void setCost(Cost cost) {
+	public void setCost(double cost) {
 		this.cost = cost;
 	}
 	/**
 	 * @return the start_time
 	 */
-	public Start_time getStart_time() {
+	public LocalDateTime getStart_time() {
 		return start_time;
 	}
 	/**
 	 * @param start_time the start_time to set
 	 */
-	public void setStart_time(Start_time start_time) {
+	public void setStart_time(LocalDateTime start_time) {
 		this.start_time = start_time;
 	}
 	/**
 	 * @return the end_time
 	 */
-	public End_time getEnd_time() {
+	public LocalDateTime getEnd_time() {
 		return end_time;
 	}
 	/**
 	 * @param end_time the end_time to set
 	 */
-	public void setEnd_time(End_time end_time) {
+	public void setEnd_time(LocalDateTime end_time) {
 		this.end_time = end_time;
 	}
 	/**
 	 * @return the variation
 	 */
-	public Variation getVariation() {
+	public double getVariation() {
 		return variation;
 	}
 	/**
 	 * @param variation the variation to set
 	 */
-	public void setVariation(Variation variation) {
+	public void setVariation(double variation) {
 		this.variation = variation;
 	}
 	

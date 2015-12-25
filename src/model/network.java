@@ -2,7 +2,7 @@
  * 
  */
 
-package net_info;
+package model;
 
 import java.util.ArrayList;
 

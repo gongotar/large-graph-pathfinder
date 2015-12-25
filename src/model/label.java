@@ -1,11 +1,11 @@
 /**
  * 
  */
-package net_info;
+package model;
 
 import java.util.ArrayList;
 
-import javax.xml.datatype.Duration;
+import java.time.Duration;
 
 /**
  * @author Masoud Gholami
@@ -13,25 +13,44 @@ import javax.xml.datatype.Duration;
  */
 public class label {
 	
+	private node node;
 	private ArrayList<connection<edge, Integer>> path;
 	private Duration		duration;
 	private int		change;
 	private double	risk;
 	private double	cost;
 	
+	
 	/*
-	 * Class constructor 
+	 * Default class constructor
+	 * creates the initial label for the start nodes
+	 * 
+	 * @param	node	assign the label to the node
+	 * 
+	 * @see label
 	 */
-	public label(label l, connection<edge, Integer> c){
-		path = new ArrayList<connection<edge, Integer>>(l.getPath());
-		path.add(c);
+	public label(node node){
+		this.setDuration(Duration.ZERO);
+		this.setChange(0);
+		this.setRisk(0);
+		this.setCost(0);
+		this.setNode(node);
 	}
 	
 	/*
 	 * Class constructor 
 	 */
-	public label(label l, connection<edge, Integer> c, Duration duration, int change, int risk){
-		this(l, c);
+	public label(node node, label l, connection<edge, Integer> c){
+		path = new ArrayList<connection<edge, Integer>>(l.getPath());
+		path.add(c);
+		this.setNode(node);
+	}
+	
+	/*
+	 * Class constructor 
+	 */
+	public label(node node, label l, connection<edge, Integer> c, Duration duration, int change, int risk){
+		this(node, l, c);
 		this.setDuration(duration);
 		this.setChange(change);
 		this.setRisk(risk);
@@ -105,6 +124,21 @@ public class label {
 	 */
 	public void setCost(double cost) {
 		this.cost = cost;
+	}
+
+	/**
+	 * @return the node
+	 */
+	public node getNode() {
+		return node;
+	}
+
+	/**
+	 * @param node the node to set
+	 */
+	public void setNode(node node) {
+		node.addLabel(this);
+		this.node = node;
 	}
 	
 }

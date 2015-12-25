@@ -1,9 +1,8 @@
 /**
  * 
  */
-package net_info;
+package model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import enums.edge_type;
@@ -16,8 +15,9 @@ import enums.edge_type;
 public class edge {
 
 	private node start, end;
-	private ArrayList<timetable_row<Integer, Integer, Double, LocalDateTime, LocalDateTime, Double>> timetable;
+	private ArrayList<timetable_row> timetable;
 	private edge_type type;
+	private boolean feasible;
 
 	/**
 	 * @return the start
@@ -50,15 +50,15 @@ public class edge {
 	/**
 	 * @return the timetable
 	 */
-	public ArrayList<timetable_row<Integer, Integer, Double, LocalDateTime, LocalDateTime, Double>> getTimetable() {
+	public ArrayList<timetable_row> getTimetable() {
 		return timetable;
 	}
 
 	/**
 	 * @param timetable the timetable to set
 	 */
-	public void setTimetable(ArrayList<timetable_row<Integer, Integer, Double, LocalDateTime, LocalDateTime, Double>> timetable) {
-		this.timetable = new ArrayList<timetable_row<Integer, Integer, Double, LocalDateTime, LocalDateTime, Double>>(timetable);
+	public void setTimetable(ArrayList<timetable_row> timetable) {
+		this.timetable = new ArrayList<timetable_row>(timetable);
 	}
 
 	/**
@@ -74,6 +74,19 @@ public class edge {
 	public void setType(edge_type type) {
 		this.type = type;
 	}
-	
+
+	/**
+	 * @return the feasible
+	 */
+	public boolean isFeasible() {
+		return feasible;
+	}
+
+	/**
+	 * @param feasible the feasible to set
+	 */
+	public void setFeasible(boolean feasible) {
+		this.feasible = feasible;
+	}
 	
 }
