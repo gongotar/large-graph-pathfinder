@@ -57,7 +57,7 @@ public class network {
 	public void get_from_db(String url){
 		// TODO method implementation
 	}
-
+	
 	/**
 	 * @return the nodes
 	 */

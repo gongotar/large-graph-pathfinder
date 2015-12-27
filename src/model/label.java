@@ -20,13 +20,25 @@ public class label {
 	private double	risk;
 	private double	cost;
 	
-	
+
 	/*
 	 * Default class constructor
+	 * creates the initial label
+	 * 
+	 * @see label
+	 */
+	public label(){
+		this.setDuration(Duration.ZERO);
+		this.setChange(0);
+		this.setRisk(0);
+		this.setCost(0);
+	}
+	
+	/*
+	 * class constructor
 	 * creates the initial label for the start nodes
 	 * 
 	 * @param	node	assign the label to the node
-	 * 
 	 * @see label
 	 */
 	public label(node node){
@@ -38,7 +50,13 @@ public class label {
 	}
 	
 	/*
-	 * Class constructor 
+	 * Class constructor assigning a node to the label
+	 * and getting the previous label and a new edge and row id pair
+	 * 
+	 * @param	node	assign the label to the node
+	 * @param	l		the previous label
+	 * @param	c		the new edge-row id pair
+	 * @see label	
 	 */
 	public label(node node, label l, connection<edge, Integer> c){
 		path = new ArrayList<connection<edge, Integer>>(l.getPath());
@@ -47,7 +65,17 @@ public class label {
 	}
 	
 	/*
-	 * Class constructor 
+	 * Class constructor assigning a node to the label
+	 * and getting the previous label and a new edge and row id pair
+	 * and also assigning the duration, change and risk to the label
+	 * 
+	 * @param	node		assign the label to the node
+	 * @param	l			the previous label
+	 * @param	c			the new edge-row id pair
+	 * @param	duration 	the duration of the path
+	 * @param	change		change no. of the path
+	 * @param	risk		risk of the path
+	 * @see		label
 	 */
 	public label(node node, label l, connection<edge, Integer> c, Duration duration, int change, int risk){
 		this(node, l, c);
