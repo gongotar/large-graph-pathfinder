@@ -58,6 +58,16 @@ public class network {
 		// TODO method implementation
 	}
 	
+	/*
+	 * Store this network to a graph database.
+	 * 
+	 * @param	url		the url of a graph database
+	 * @see		network
+	 */
+	public void store_to_db(String url){
+		// TODO method implementation
+	}
+	
 	/**
 	 * @return the nodes
 	 */

@@ -11,6 +11,6 @@ package enums;
 public enum node_type {
 	
 	bus_station,
-	taxi_station,
+	car_station,
 	train_station;
 }

@@ -14,7 +14,7 @@ import enums.node_type;
 public class node {
 	
 	private int		id;
-	private long	lat, lon;
+	private coordinate	coordinate;
 	private node_type	type;
 	private ArrayList<edge> outgoing_edges;
 	private ArrayList<edge> incoming_edges;
@@ -35,26 +35,26 @@ public class node {
 	/**
 	 * @return the lat
 	 */
-	public long getLat() {
-		return lat;
+	public float getLat() {
+		return this.getCoordinate().getLatitude();
 	}
 	/**
 	 * @param lat the lat to set
 	 */
-	public void setLat(long lat) {
-		this.lat = lat;
+	public void setLat(float lat) {
+		this.getCoordinate().setLatitude(lat);
 	}
 	/**
 	 * @return the lon
 	 */
-	public long getLon() {
-		return lon;
+	public float getLon() {
+		return this.getCoordinate().getLongitude();
 	}
 	/**
 	 * @param lon the lon to set
 	 */
-	public void setLon(long lon) {
-		this.lon = lon;
+	public void setLon(float lon) {
+		this.getCoordinate().setLongitude(lon);
 	}
 	/**
 	 * @return the type
@@ -113,6 +113,18 @@ public class node {
 	 */
 	public void addLabel(label l){
 		this.labels.add(l);
+	}
+	/**
+	 * @return the coordinate
+	 */
+	public coordinate getCoordinate() {
+		return coordinate;
+	}
+	/**
+	 * @param coordinate the coordinate to set
+	 */
+	public void setCoordinate(coordinate coordinate) {
+		this.coordinate = coordinate;
 	}
 	
 }

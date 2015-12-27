@@ -10,7 +10,7 @@ package enums;
 public enum edge_type {
 
 	bus,
-	taxi,
+	car,
 	train,
 	walk;
 	
