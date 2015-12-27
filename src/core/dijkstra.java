@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+import enums.edge_type;
 import model.connection;
 import model.edge;
 import model.label;
@@ -51,22 +52,70 @@ public class dijkstra {
 			for (edge e : node.getOutgoing_edges()) {
 				if(!e.isFeasible()) continue;						// ignore this edge
 				label new_label = create_label(l, e);
-				if(dominated(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels 
+				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels 
 					continue;
 				new_label.setNode(e.getEnd());
 				pq.add(new_label);
-				remove_dominated_labels(e, new_label);
+				remove_dominated_labels(e.getEnd(), new_label);
 			}
 		}
 	}
 
-	private static void remove_dominated_labels(edge e, label new_label) {
-		// TODO Auto-generated method stub
-		
+	/*
+	 * Searches in the labels of the node and checks if any labels in the list
+	 * are dominated by the new label, if finds one then it will be removed from
+	 * the list
+	 * 
+	 * @param	node		the node containing the label list
+	 * @param	new_label	the new label that is to be checked against all the labels in the list
+	 * @see		dijkstra
+	 */
+	private static void remove_dominated_labels(node node, label new_label) {
+		int i = 0;
+		while(i < node.getLabels().size()){
+			if(dominates(new_label, node.getLabels().get(i)))
+				node.getLabels().remove(i);
+			else
+				i++;
+		}
 	}
 
-	private static boolean dominated(ArrayList<label> arrayList, label new_label) {
-		// TODO Auto-generated method stub
+	/*
+	 * Checks if the new label is dominated by any other labels in the label list
+	 * 
+	 * @param 	label_list	the list of the labels in a node
+	 * @param	new_label	the new label to be checked
+	 * @return	a boolean value indicating whether the new label is dominated or not
+	 * @see 	dijkstra
+	 */
+	private static boolean dominated_in_list(ArrayList<label> label_list, label new_label) {
+		for (label label : label_list) {
+			if(dominates(label, new_label))
+				return true;
+		}
+		return false;
+	}
+
+	/*
+	 * Decides whether the label dominates the new label or not
+	 * considering the attributes of the both labels
+	 * 
+	 * @param	label		the label to be checked
+	 * @param	new_label	the new label to be checked against
+	 * @return	a boolean value, true if label dominates the new label, false otherwise
+	 * @see		dijkstra
+	 */
+	private static boolean dominates(label label, label new_label) {
+		// TODO Dominance evaluation algorithm here
+		// for now a basic dominance evaluation methodology is implemented
+		// simply checking if all label attributes are less than or equal to
+		// new label attributes
+		
+		if(label.getCost() <= new_label.getCost()
+				&& label.getDuration().compareTo(new_label.getDuration()) <= 0
+				&& label.getChange() <= new_label.getChange()
+				&& label.getRisk() <= new_label.getRisk())
+			return true;
 		return false;
 	}
 
@@ -105,13 +154,13 @@ public class dijkstra {
 		double new_cost = compute_new_cost(l, row);
 		new_label.setCost(new_cost);				// set the new cost
 		
-		Duration new_duration = compute_new_duration(l, row);
+		Duration new_duration = compute_new_duration(l, row, e.getType());
 		new_label.setDuration(new_duration);		// set the new duration
 		
-		int new_change = compute_new_change(l, row);
+		int new_change = compute_new_change(l, row, e.getType());
 		new_label.setChange(new_change);			// set the new change
 		
-		double new_risk = compute_new_risk(l, row);
+		double new_risk = compute_new_risk(l, row, e.getType());
 		new_label.setRisk(new_risk);				// set the new risk
 		
 		return new_label;
@@ -127,8 +176,8 @@ public class dijkstra {
 	 *  @return	new risk evaluation
 	 *  @see dijkstra
 	 */
-	private static double compute_new_risk(label l, timetable_row row) {
-		// TODO Auto-generated method stub
+	private static double compute_new_risk(label l, timetable_row row, edge_type edge_type) {
+		// TODO Risk evaluation algorithms here
 		return 0;
 	}
 
@@ -139,11 +188,14 @@ public class dijkstra {
 	 * 
 	 *  @param	l		previous label
 	 *  @param	row		a row of the new edge's timetable
+	 *  @param	edge_type	the type of the edge
 	 *  @return	new change number
 	 *  @see dijkstra
 	 */
-	private static int compute_new_change(label l, timetable_row row) {
+	private static int compute_new_change(label l, timetable_row row, edge_type edge_type) {
 		int change = l.getChange();							// get the change no. of l
+		if(edge_type.equals(enums.edge_type.walk))			// if walking edge then no change increment
+			return change;
 		int size = l.getPath().size();
 		timetable_row last_row = get_label_row(l, size - 1);// get the last row
 		
@@ -181,17 +233,23 @@ public class dijkstra {
 	 * Computes the new duration considering the start time of the label and 
 	 * the end time of the edge
 	 * 
-	 *  @param	l		previous label
-	 *  @param	row		a row of the new edge's timetable
+	 *  @param	l			previous label
+	 *  @param	row			a row of the new edge's timetable
+	 *  @param	edge_type	the type of the edge
 	 *  @return	new duration
 	 *  @see dijkstra
 	 */
-	private static Duration compute_new_duration(label l, timetable_row row) {
+	private static Duration compute_new_duration(label l, timetable_row row, edge_type edge_type) {
 		timetable_row first_row = get_label_row(l, 0);					// get the first row
 		LocalDateTime path_start_time =	first_row.getStart_time();		// get the start time of the first edge using the id 
 																		// compute the duration using the start time of
 																		// the journey and the end time of the new edge
-		Duration duration = Duration.between(row.getEnd_time(), path_start_time);
+		Duration duration;
+		if(edge_type.equals(enums.edge_type.walk))						// if walking edge then simply add
+																		// the edge duration to the label duration
+			duration = Duration.between(row.getEnd_time(), row.getStart_time()).plus(l.getDuration());
+		else
+			duration = Duration.between(row.getEnd_time(), path_start_time);
 		return duration;
 	}
 
@@ -222,8 +280,10 @@ public class dijkstra {
 	 * @see dijkstra
 	 */
 	private static Integer find_edge_id(label l, edge e) {
-		long minutes = 1;										// minimum waiting time
+		long minimum_waiting_minutes = 1;						// minimum waiting time
 		
+		if(e.getType().equals(edge_type.walk))					// if walking edge then return 0
+			return 0;
 		int size = l.getPath().size();
 		timetable_row last_row = get_label_row(l, size - 1);	// get the last row of the path in the label
 		LocalDateTime arrived_at = last_row.getEnd_time();		// get the arriving time of the path
@@ -233,7 +293,7 @@ public class dijkstra {
 		int index = 0, min_index = index;
 		Duration waiting_time = Duration.between(LocalDateTime.MAX, arrived_at);
 		for (timetable_row row : timetable) {					// finding the minimum waiting time
-			if(arrived_at.isBefore(row.getStart_time().minusMinutes(minutes))
+			if(arrived_at.isBefore(row.getStart_time().minusMinutes(minimum_waiting_minutes))
 					&& Duration.between(row.getStart_time(), arrived_at).compareTo(waiting_time) < 0){
 				waiting_time = Duration.between(row.getStart_time(), arrived_at);
 				min_index = index;
