@@ -5,7 +5,7 @@ package test_data;
 
 import java.util.ArrayList;
 import java.util.Random;
-
+import org.apache.commons.math3.stat.StatUtils;
 import enums.node_type;
 import model.coordinate;
 import model.edge;
@@ -86,7 +86,55 @@ public class test_data_generation {
 	 * @see		test_data_generation
 	 */
 	private static ArrayList<edge> assign_random_outgoing_edges(ArrayList<node> nodes, int i) {
-		// TODO Auto-generated method stub
+		// greater values results shorter edges
+		double propagation_degree = 4;
+		// minimum no. of nodes to be considered for being target_node
+		int	minimum_node_consideration = 3;
+		
+		node node = nodes.get(i);
+		double[] p = new double[nodes.size() - 1];
+		int index = 0;
+		double max_distance = Double.MIN_VALUE;
+		double min_distance = Double.MAX_VALUE;
+		for (int j = 0; j < nodes.size(); j++) {
+			if(j == i)		// ignore this node 
+				continue;
+			node target_node = nodes.get(i);
+			p[index] = node.getCoordinate()
+					.getDistanceTo(target_node.getCoordinate());
+			if(max_distance < p[index])
+				max_distance = p[index];
+			if(min_distance > p[index])
+				min_distance = p[index];
+			index++;
+		}
+		
+		// p preparation so that it contains more values (probability)
+		// for the nodes in the nearby
+		
+		for (int j = 0; j < p.length; j++)
+			p[j] = Math.pow(max_distance + min_distance - p[j], propagation_degree);
+		
+		// eliminate nodes that are far away
+		double treshold = StatUtils.mean(p);
+		int more_than_treshold = 0;
+		
+		if(minimum_node_consideration < nodes.size()){
+			while(more_than_treshold <= minimum_node_consideration){
+				more_than_treshold = 0;
+				for (double d : p)
+					if(d >= treshold--)
+						more_than_treshold++;
+			}
+			treshold++;
+			for (int j = 0; j < p.length; j++)
+				if(p[i] < treshold)
+					p[i] = 0;	// set the probability to zero (far away nodes)
+		}
+
+		
+		stochastic_choice(p);
+		
 		return null;
 	}
 

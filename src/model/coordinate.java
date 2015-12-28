@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with the AusStage Utilities Package.  
  * If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @resource: http://www.java2s.com/Code/Java/2D-Graphics-GUI/Aclasstorepresentalatitudeandlongitude.htm
 */
 
 package model;
@@ -155,6 +157,24 @@ public class coordinate implements Comparable<coordinate>{
     }
     
   } // end compareTo method
+  
+  /*
+   * added by Masoud Gholami
+   * 
+   * Computes the distance between this coordinate and
+   * another coordinate
+   * 
+   * @param	c	the other coordinate
+   * @return	distance
+   * @see		coordinate
+   */
+  public double getDistanceTo(coordinate c){
+	  float longitud_distance = this.getLongitude() - c.getLongitude();
+	  float latitude_distance = this.getLatitude() - c.getLatitude();
+	  double distance = Math.sqrt(Math.pow(longitud_distance, 2) + 
+			  Math.pow(latitude_distance, 2));
+	  return distance;
+  }
 }
 class CoordinateManager {
 
