@@ -5,7 +5,8 @@ package test_data;
 
 import java.util.ArrayList;
 import java.util.Random;
-import org.apache.commons.math3.stat.StatUtils;
+
+import enums.edge_type;
 import enums.node_type;
 import model.coordinate;
 import model.edge;
@@ -90,33 +91,42 @@ public class test_data_generation {
 		double propagation_degree = 4;
 		// minimum no. of nodes to be considered for being target_node
 		int	minimum_node_consideration = 3;
+		// minimum no. of edges for each node
+		int min_edge = 1;
+		// maximum no. of edges for each node
+		int max_edge = 8;
 		
 		node node = nodes.get(i);
-		double[] p = new double[nodes.size() - 1];
-		int index = 0;
+		ArrayList<Double> p = new ArrayList<Double>(); // maximum length is the number of nodes
+
 		double max_distance = Double.MIN_VALUE;
 		double min_distance = Double.MAX_VALUE;
 		for (int j = 0; j < nodes.size(); j++) {
 			if(j == i)		// ignore this node 
 				continue;
-			node target_node = nodes.get(i);
-			p[index] = node.getCoordinate()
+			node target_node = nodes.get(j);
+			double dist = node.getCoordinate()
 					.getDistanceTo(target_node.getCoordinate());
-			if(max_distance < p[index])
-				max_distance = p[index];
-			if(min_distance > p[index])
-				min_distance = p[index];
-			index++;
+			p.add(dist);
+			if(max_distance < dist)
+				max_distance = dist;
+			if(min_distance > dist)
+				min_distance = dist;
 		}
 		
 		// p preparation so that it contains more values (probability)
 		// for the nodes in the nearby
 		
-		for (int j = 0; j < p.length; j++)
-			p[j] = Math.pow(max_distance + min_distance - p[j], propagation_degree);
+		double treshold = 0;
+		for (int j = 0; j < p.size(); j++){
+			double modified_value = Math.pow(max_distance + min_distance - p.get(j), propagation_degree);
+			p.set(j, modified_value);
+			treshold += modified_value;
+		}
 		
 		// eliminate nodes that are far away
-		double treshold = StatUtils.mean(p);
+		
+		treshold = treshold / p.size();
 		int more_than_treshold = 0;
 		
 		if(minimum_node_consideration < nodes.size()){
@@ -127,15 +137,132 @@ public class test_data_generation {
 						more_than_treshold++;
 			}
 			treshold++;
-			for (int j = 0; j < p.length; j++)
-				if(p[i] < treshold)
-					p[i] = 0;	// set the probability to zero (far away nodes)
+			for (int j = 0; j < p.size(); j++)
+				if(p.get(j) < treshold)
+					p.set(j, 0.0);	// set the probability to zero (far away nodes)
 		}
+		
+		// eliminate nodes that are not the same type
 
+		for (int j = 0; j < p.size(); j++) {
+			int index = j;
+			if(index >= i)
+				index ++;	
+			if(! nodes.get(index).getType().equals(node.getType())){
+				p.set(j, 0.0); // set the probability to zero (nodes of the other types)
+			}
+			
+		}
 		
-		stochastic_choice(p);
+		// Choose n items from p, n between a min & max
 		
-		return null;
+		// Choose a random value between min and max no. of edges
+		Random rand = new Random();
+		int n = (int)(rand.nextDouble() * (max_edge - min_edge) + min_edge);
+		ArrayList<Integer> indexes = stochastic_choice(p, n);
+		
+		// Create edges
+		
+		ArrayList<edge> edges = new ArrayList<edge>();
+		
+		for (int j = 0; j < indexes.size(); j++) {
+			int index = indexes.get(j);
+			if(index >= i)
+				indexes.set(j, index ++);
+			edge new_edge = new edge();
+			new_edge.setStart(node);
+			new_edge.setEnd(nodes.get(index));
+			new_edge.setFeasible(false);
+			new_edge.setType(find_edge_type(node, nodes.get(index)));
+			if(new_edge.getType() != null)
+				edges.add(new_edge);
+		}
+		
+		for (int j = 0; j < nodes.size(); j++) {
+			if(i != j && in_neighborhood(node, nodes.get(j))){
+				edge new_edge = new edge();
+				new_edge.setStart(node);
+				new_edge.setEnd(nodes.get(j));
+				new_edge.setFeasible(false);
+				new_edge.setType(enums.edge_type.walk);
+				edges.add(new_edge);
+			}
+		}
+		
+		return edges;
+	}
+
+	/*
+	 * Checks if node1 and node2 in the neighborhood are, so that they 
+	 * can be reached from each other by walking
+	 * 
+	 * @param	node1	the first node to be checked
+	 * @param	node2	the second node to be checked
+	 * @return	a boolean value, true if the nodes are in the neighborhood, false otherwise
+	 * @see		test_data_generation
+	 */
+	private static boolean in_neighborhood(node node1, node node2) {
+		// Maximum distance that can be reached by walking
+		double treshold = 1;
+		double dist = node1.getCoordinate().getDistanceTo(node2.getCoordinate());
+		
+		return (dist > treshold) ? false : true;
+	}
+
+	/*
+	 * Returns the correct type of the edge considering the 
+	 * the source node and the destination node 
+	 * 
+	 * @param	source_node		source node 
+	 * @param	dest_node		destination node 
+	 * @return	edge type
+	 * @see		test__data_generation
+	 */
+	private static edge_type find_edge_type(node source_node, node dest_node) {
+		if(! source_node.getType().equals(dest_node.getType()))
+			return null;
+		
+		edge_type type = null;
+		
+		if(source_node.getType().equals(enums.node_type.bus_station))
+			type = enums.edge_type.bus;
+		if(source_node.getType().equals(enums.node_type.car_station))
+			type = enums.edge_type.car;
+		if(source_node.getType().equals(enums.node_type.train_station))
+			type = enums.edge_type.train;
+		
+		return type;
+	}
+
+	/*
+	 * Gets an array of n probabilities as input and chooses
+	 * n distinct numbers between 0 to n - 1 randomly based on the given
+	 * probabilities
+	 * 
+	 * @param	p	array of probabilities of n numbers
+	 * @param	n	number of choices
+	 * @return	randomly chosen numbers
+	 * @see		test_data_generation 
+	 */
+	private static ArrayList<Integer> stochastic_choice(ArrayList<Double> p, int n) {
+
+		ArrayList<Double> p_clone = new ArrayList<Double>(p);
+		ArrayList<Integer> chosen_indexes = new ArrayList<Integer>();
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		
+		for (int i = 0; i < n; i++) {
+			int index = stochastic_choice(p_clone);
+			int fixed_index = index;
+			for (int j = chosen_indexes.size(); j >= 0; j--) {
+				if(fixed_index >= chosen_indexes.get(j))
+					fixed_index ++;
+			}
+			chosen_indexes.add(index);
+			p_clone.remove(index);
+			result.add(fixed_index);
+		}
+		return result;
+		
 	}
 
 	/*
@@ -164,10 +291,10 @@ public class test_data_generation {
 	 * @see		test_data_generation  
 	 */
 	private static node_type random_node_type() {
-		double[] p = new double[node_type.values().length];
-		p[0] = 3;	// 3 buses
-		p[1] = 1;	// 1 car
-		p[2] = 6;	// 6 trains
+		ArrayList<Double> p = new ArrayList<Double>();
+		p.add(0, 3.0);	// 3 buses
+		p.add(1, 1.0);	// 1 car
+		p.add(2, 6.0);	// 6 trains
 		int choice = stochastic_choice(p);
 		return node_type.values()[choice];
 	}
@@ -181,15 +308,15 @@ public class test_data_generation {
 	 * @return	randomly chosen number
 	 * @see		test_data_generation 
 	 */
-	private static int stochastic_choice(double[] p){
+	private static int stochastic_choice(ArrayList<Double> p){
 		double sum = 0;
 		for (double d : p)
 			sum += d;
 		Random rn = new Random();
 		double rand = rn.nextDouble() * sum;
 		double flag = 0;
-		for (int i = 0; i < p.length; i++) {
-			flag += p[i];
+		for (int i = 0; i < p.size(); i++) {
+			flag += p.get(i);
 			if(rand <= flag)
 				return i;
 		}
