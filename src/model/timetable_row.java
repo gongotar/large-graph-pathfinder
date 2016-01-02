@@ -11,7 +11,7 @@ public class timetable_row{
 	private LocalDateTime 	end_time;
 	private double 			variation;
 	
-	/*
+	/**
 	 * Class constructor setting all of the class attributes
 	 * 
 	 * @param	id			the id of the connection

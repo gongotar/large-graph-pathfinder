@@ -12,7 +12,7 @@ public class connection <Edge, Connection_id>{
     private Edge e;
     private Connection_id id;
     
-    /*
+    /**
      * Class constructor setting values of edge & connection id
      * 
      * @param	e	an edge of the chosen path

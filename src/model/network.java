@@ -15,7 +15,7 @@ public class network {
 	private ArrayList<node> nodes;
 	private ArrayList<edge> edges;
 	
-	/*
+	/**
 	 * Default class constructor
 	 * 
 	 * @see network
@@ -24,7 +24,7 @@ public class network {
 		
 	}
 	
-	/*
+	/**
 	 * Class constructor specifying the url of 
 	 * the graph database to be loaded.
 	 * 
@@ -36,7 +36,7 @@ public class network {
 		this.get_from_db(url);
 	}
 	
-	/*
+	/**
 	 * (non-Javadoc)
 	 * Creates a new instance of this network with the same edges and nodes
 	 * @see java.lang.Object#clone()
@@ -48,7 +48,7 @@ public class network {
 		return new_netw;
 	}
 	
-	/*
+	/**
 	 * Loads a graph from a graph database.
 	 * 
 	 * @param	url		the url of a graph database
@@ -58,7 +58,7 @@ public class network {
 		// TODO method implementation
 	}
 	
-	/*
+	/**
 	 * Store this network to a graph database.
 	 * 
 	 * @param	url		the url of a graph database

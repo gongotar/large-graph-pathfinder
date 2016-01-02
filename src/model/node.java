@@ -5,6 +5,7 @@ package model;
 
 import java.util.ArrayList;
 
+import test_data.city;
 import enums.node_type;
 
 /**
@@ -14,6 +15,7 @@ import enums.node_type;
 public class node {
 	
 	private int		id;
+	private city	city;
 	private coordinate	coordinate;
 	private node_type	type;
 	private ArrayList<edge> outgoing_edges;
@@ -105,7 +107,7 @@ public class node {
 		this.labels = new ArrayList<label>(labels);
 	}
 	
-	/*
+	/**
 	 * Adds a new label to the node
 	 * 
 	 * @param	l	the new label
@@ -125,6 +127,18 @@ public class node {
 	 */
 	public void setCoordinate(coordinate coordinate) {
 		this.coordinate = coordinate;
+	}
+	/**
+	 * @return the city
+	 */
+	public city getCity() {
+		return city;
+	}
+	/**
+	 * @param city the city to set
+	 */
+	public void setCity(city city) {
+		this.city = city;
 	}
 	
 }

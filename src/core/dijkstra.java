@@ -26,7 +26,7 @@ public class dijkstra {
 		
 	}
 	
-	/*
+	/**
 	 * Computes all of the Pareto-optimal solutions in a network (graph)
 	 * using the modified (generalized) Dijkstra algorithm.
 	 * 
@@ -60,7 +60,7 @@ public class dijkstra {
 		}
 	}
 
-	/*
+	/**
 	 * Searches in the labels of the node and checks if any labels in the list
 	 * are dominated by the new label, if finds one then it will be removed from
 	 * the list
@@ -79,7 +79,7 @@ public class dijkstra {
 		}
 	}
 
-	/*
+	/**
 	 * Checks if the new label is dominated by any other labels in the label list
 	 * 
 	 * @param 	label_list	the list of the labels in a node
@@ -95,7 +95,7 @@ public class dijkstra {
 		return false;
 	}
 
-	/*
+	/**
 	 * Decides whether the label dominates the new label or not
 	 * considering the attributes of the both labels
 	 * 
@@ -118,7 +118,7 @@ public class dijkstra {
 		return false;
 	}
 
-	/*
+	/**
 	 * Creates a new label by using the previous label and 
 	 * adding a new edge to it considering the aggregation
 	 * of the edge attributes and the label attributes
@@ -165,7 +165,7 @@ public class dijkstra {
 		return new_label;
 	}
 
-	/*
+	/**
 	 * Computes the new risk of the path, considering the risk
 	 * of the label and the variation of the last row of the label
 	 * and also using the start time of the new row
@@ -180,7 +180,7 @@ public class dijkstra {
 		return 0;
 	}
 
-	/*
+	/**
 	 * Computes the new change number of the path, considering the number of changes
 	 * of the label and deciding if adding the new edge will increase the total
 	 * number of changes by one or not.
@@ -204,7 +204,7 @@ public class dijkstra {
 		return change;
 	}
 
-	/*
+	/**
 	 * Gets the used row in the timetable of the row_index-th step of the label
 	 * 
 	 *  @param	l			the label with many steps and timetables in each step
@@ -228,7 +228,7 @@ public class dijkstra {
 		return row;
 	}
 
-	/*
+	/**
 	 * Computes the new duration considering the start time of the label and 
 	 * the end time of the edge
 	 * 
@@ -252,7 +252,7 @@ public class dijkstra {
 		return duration;
 	}
 
-	/*
+	/**
 	 * Computes the new cost considering the cost of the label and 
 	 * the cost of the edge
 	 * 
@@ -266,7 +266,7 @@ public class dijkstra {
 		return new_cost;
 	}
 
-	/*
+	/**
 	 * Defines the correct timetable row of the new edge to be
 	 * used when the path of the given label is taken.
 	 * It uses the arriving information of the path in the label,

@@ -21,7 +21,7 @@ public class label {
 	private double	cost;
 	
 
-	/*
+	/**
 	 * Default class constructor
 	 * creates the initial label
 	 * 
@@ -34,7 +34,7 @@ public class label {
 		this.setCost(0);
 	}
 	
-	/*
+	/**
 	 * class constructor
 	 * creates the initial label for the start nodes
 	 * 
@@ -49,7 +49,7 @@ public class label {
 		this.setNode(node);
 	}
 	
-	/*
+	/**
 	 * Class constructor assigning a node to the label
 	 * and getting the previous label and a new edge and row id pair
 	 * 
@@ -64,7 +64,7 @@ public class label {
 		this.setNode(node);
 	}
 	
-	/*
+	/**
 	 * Class constructor assigning a node to the label
 	 * and getting the previous label and a new edge and row id pair
 	 * and also assigning the duration, change and risk to the label

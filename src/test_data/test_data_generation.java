@@ -5,9 +5,8 @@ package test_data;
 
 import java.util.ArrayList;
 import java.util.Random;
-
 import enums.edge_type;
-import enums.node_type;
+import model.CoordinateManager;
 import model.coordinate;
 import model.edge;
 import model.network;
@@ -20,41 +19,37 @@ import model.node;
 public class test_data_generation {
 
 	public static void main(String args[]){
-		int bus = 0, car = 0, train = 0;
-		for (int i = 0; i < 1000; i++) {
-			node_type t = random_node_type();
-			if(t.equals(node_type.bus_station))
-				bus++;
-			if(t.equals(node_type.car_station))
-				car++;
-			if(t.equals(node_type.train_station))
-				train++;
-		}
-		System.out.println("bus: " + bus + ", car: " + car + ", train: " + train);
+
 	}
 	
-	/*
+	/**
 	 * Generates a random network of nodes and edges 
-	 * with the given size
+	 * with the given city no.
 	 * 
-	 * @param	size	no. of the nodes in the network
-	 * @return	network of the given size
+	 * @param	size	no. of the cities in the network
+	 * @return	network of the given city size
 	 * @see 	test_data_generation
 	 */
 	public static network generate_netw(int size){
 		network netw = new network();
-		ArrayList<coordinate> coordinations =
-				compute_node_coordinations(size);
+		
+		//generate cities and nodes (stations) in the cities
+		ArrayList<city> cities = generate_cities(size);
+		
 		ArrayList<node> nodes = new ArrayList<node>();
 		ArrayList<edge> edges = new ArrayList<edge>();
 		
+		// add generated nodes
+		
 		for (int i = 0; i < size; i++) {
-			node node = new node();
-			node.setId(i);
-			node.setType(random_node_type());
-			node.setCoordinate(coordinations.get(i));
+			city c = cities.get(i);
+			for (int j = 0; j < c.getStations().size(); j++)
+				nodes.addAll(c.getStations());
+		}
+		
+		// generate edges
+		for (int i = 0; i < nodes.size(); i++) {
 			edges.addAll(assign_random_outgoing_edges(nodes, i));
-			nodes.add(node);
 		}
 		
 		assign_netw_lines(nodes);
@@ -63,7 +58,130 @@ public class test_data_generation {
 		return netw;
 	}
 
-	/*
+	/**
+	 * Generates cities in the given size, each city will have
+	 * a set of different kinds of stations. the stations in each city
+	 * are in the nearby
+	 * 
+	 * @param	size	no. of the cities
+	 * @return	a set of cities of the given size
+	 * @see		test_data_generation
+	 */
+	private static ArrayList<city> generate_cities(int size) {
+		ArrayList<city> cities = new ArrayList<city>();
+		ArrayList<coordinate> coordinations = 
+				compute_city_center_coordinations(size);
+		
+		int node_id = 0;
+		for (int i = 0; i < size; i++) {
+			city c = new city();
+			c.setId(i);
+			c.setCity_center(coordinations.get(i));
+			ArrayList<node> stations = gen_city_stations(c, node_id);
+			c.setStations(stations);
+			node_id = node_id + stations.size();
+		}
+		
+		return cities;
+	}
+
+	/**
+	 * Gets the city as the input and generates a set
+	 * of stations (nodes) of different types in the city
+	 * 
+	 * @param	city		the city with no stations 
+	 * @param	node_id		the starting id that can be given to the 
+	 * 							generated nodes
+	 * @return	a set of nodes (stations) in the city
+	 * @see		test_data_generation
+	 */
+	private static ArrayList<node> gen_city_stations(city city,
+			int node_id) {
+		// possibilities in the no. of stations in each city
+		ArrayList<Double> p_st_no = new ArrayList<Double>();
+		p_st_no.add(1.0);	// one station
+		p_st_no.add(3.0);	// two stations
+		p_st_no.add(5.0); 	// three stations
+		
+		// possibilities in the types of the stations
+		ArrayList<Double> p_st_typ = new ArrayList<Double>();
+		p_st_typ.add(3.0);	// bus station
+		p_st_typ.add(1.0);	// car station
+		p_st_typ.add(6.0);	// train station
+		
+		coordinate city_center = city.getCity_center();
+		
+		// no. of stations in the city
+		int st_no = stochastic_choice(p_st_no) + 1;
+		
+		// type of the stations in the city
+		ArrayList<Integer> node_types = stochastic_choice(p_st_typ, st_no);
+		
+		ArrayList<node> nodes = new ArrayList<node>();
+		
+		for (int i = 0; i < st_no; i++) {
+			node n = new node();
+			n.setId(node_id ++);
+			n.setType(enums.node_type.values()[node_types.get(i)]);
+			n.setCity(city);
+			coordinate c = random_coordinate_in_city(city_center);
+			n.setCoordinate(c);
+			nodes.add(n);
+		}
+		
+		return nodes;
+	}
+
+	/**
+	 * Generates a random coordination in the city given by it's city
+	 * center coordination. It uses the city area in meters.
+	 * 
+	 * @param	city_center	the coordination of the city center
+	 * @return	a randomly generated coordination within the city
+	 * @see		test_data_generation
+	 */
+	private static coordinate random_coordinate_in_city(coordinate city_center) {
+		// city radius in meters
+		double city_radius = 15000;
+		
+		Random rnd = new Random();
+		
+		// distance in longitude direction, between 0 and 25
+		int long_dist = (int)(rnd.nextDouble() * city_radius);
+		
+		// distance in latitude direction, considering long_dist, in the
+		// city circle
+		int lat_dist = (int)(Math.sqrt(Math.pow(city_radius, 2) 
+				- Math.pow(long_dist, 2)));
+		
+		coordinate long_c;
+		
+		// a random boolean value deciding whether to go to east (true) or west (false)
+		boolean random_east_west = rnd.nextBoolean();
+		
+		if(random_east_west)
+			long_c = CoordinateManager.addDistanceEast(city_center.getLatitude(), 
+					city_center.getLongitude(), long_dist);
+		else
+			long_c = CoordinateManager.addDistanceWest(city_center.getLatitude(), 
+					city_center.getLongitude(), long_dist);
+		
+		coordinate final_c;
+		
+		// a random boolean value deciding whether to go to north (true) or south (false)
+		boolean random_north_south = rnd.nextBoolean();
+		
+		if(random_north_south)
+			final_c = CoordinateManager.addDistanceNorth(long_c.getLatitude(), 
+					long_c.getLongitude(), lat_dist);
+		else
+			final_c = CoordinateManager.addDistanceSouth(long_c.getLatitude(), 
+					long_c.getLongitude(), lat_dist);
+		
+		return final_c;
+	}
+
+	/**
 	 * Assigns randomly generated lines and timetables to
 	 * each edge
 	 * 
@@ -71,11 +189,12 @@ public class test_data_generation {
 	 * @see		test_data_generation
 	 */
 	private static void assign_netw_lines(ArrayList<node> nodes) {
-		// TODO Auto-generated method stub
+		// TODO Start from one node and randomly explore edges 
+		// and go to other nodes and then randomly switch lines
 		
 	}
 
-	/*
+	/**
 	 * Assigns random outgoing edges from the i-th node in the 
 	 * node list (nodes) to the other nodes in the list. 
 	 * the nodes in the near by have more chances to get 
@@ -192,7 +311,7 @@ public class test_data_generation {
 		return edges;
 	}
 
-	/*
+	/**
 	 * Checks if node1 and node2 in the neighborhood are, so that they 
 	 * can be reached from each other by walking
 	 * 
@@ -202,14 +321,18 @@ public class test_data_generation {
 	 * @see		test_data_generation
 	 */
 	private static boolean in_neighborhood(node node1, node node2) {
-		// Maximum distance that can be reached by walking
-		double treshold = 1;
+		// Maximum distance that can be reached by walking (kilometers)
+		double treshold = 3;
+		
+		if(node1.getCity().equals(node2.getCity()))
+			return true;
+		
 		double dist = node1.getCoordinate().getDistanceTo(node2.getCoordinate());
 		
 		return (dist > treshold) ? false : true;
 	}
 
-	/*
+	/**
 	 * Returns the correct type of the edge considering the 
 	 * the source node and the destination node 
 	 * 
@@ -234,7 +357,7 @@ public class test_data_generation {
 		return type;
 	}
 
-	/*
+	/**
 	 * Gets an array of n probabilities as input and chooses
 	 * n distinct numbers between 0 to n - 1 randomly based on the given
 	 * probabilities
@@ -265,41 +388,33 @@ public class test_data_generation {
 		
 	}
 
-	/*
-	 * Gets the size of the network as the input
-	 * and generates randomly node coordinations
+	/**
+	 * Gets the city size of the network as the input
+	 * and generates randomly city coordinations
 	 * in a normal distributed manner
 	 * 
-	 * @param	size	size of the network
+	 * @param	size	no. of cities in the network
 	 * @return	an array of n randomly generated coordinations
 	 * @see		test_data_generation 
 	 */
-	private static ArrayList<coordinate> compute_node_coordinations(int size) {
-		// TODO Auto-generated method stub
-		int weight = (int) Math.sqrt(size / 1.6);
-		int height = size / weight;
-		@SuppressWarnings("unused")
-		int extra = size - weight * height;
-		return null;
-	}
+	private static ArrayList<coordinate> compute_city_center_coordinations(int size) {
 
-	/*
-	 * Returns randomly different node types
-	 * with different probabilities
-	 * 
-	 * @return	randomly chosen node type
-	 * @see		test_data_generation  
-	 */
-	private static node_type random_node_type() {
-		ArrayList<Double> p = new ArrayList<Double>();
-		p.add(0, 3.0);	// 3 buses
-		p.add(1, 1.0);	// 1 car
-		p.add(2, 6.0);	// 6 trains
-		int choice = stochastic_choice(p);
-		return node_type.values()[choice];
+		ArrayList<coordinate> coordinations = new ArrayList<coordinate>();
+
+		Random rnd = new Random();
+		
+		for (int i = 0; i < size; i++) {
+			float longitude = (rnd.nextFloat() * 2 - 1)
+					* CoordinateManager.MAX_LONGITUDE;
+			float latitude = (rnd.nextFloat() * 2 - 1)
+					* CoordinateManager.MAX_LATITUDE;
+			coordinations.add(new coordinate(latitude, longitude));
+		}
+		
+		return coordinations;
 	}
 	
-	/*
+	/**
 	 * Gets an array of n probabilities as input and chooses
 	 * a number between 0 to n - 1 randomly based on the given
 	 * probabilities
