@@ -52,6 +52,11 @@ public class test_data_generation {
 			edges.addAll(assign_random_outgoing_edges(nodes, i));
 		}
 		
+		// set unique edge id
+		for (int i = 0; i < edges.size(); i++) {
+			edges.get(i).setId(i);
+		}
+		
 		assign_netw_lines(nodes);
 		netw.setNodes(nodes);
 		netw.setEdges(edges);
@@ -376,7 +381,7 @@ public class test_data_generation {
 		for (int i = 0; i < n; i++) {
 			int index = stochastic_choice(p_clone);
 			int fixed_index = index;
-			for (int j = chosen_indexes.size(); j >= 0; j--) {
+			for (int j = chosen_indexes.size() - 1; j >= 0; j--) {
 				if(fixed_index >= chosen_indexes.get(j))
 					fixed_index ++;
 			}

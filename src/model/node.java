@@ -22,6 +22,23 @@ public class node {
 	private ArrayList<edge> incoming_edges;
 	private ArrayList<label> labels;
 	
+	
+	/**
+	 * Prints the node properties as a string
+	 * 
+	 * @return	node properties
+	 * @see	node
+	 */
+	@Override
+	public String toString(){
+		String text = "";
+		if(this.getCity() != null)
+			text += "City: " + this.getCity().toString() + ", ";
+		text += this.getType().toString();
+		text += ", " + this.getId();
+		return text;
+	}
+	
 	/**
 	 * @return the id
 	 */

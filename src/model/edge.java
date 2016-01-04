@@ -14,11 +14,28 @@ import enums.edge_type;
  */
 public class edge {
 
+	private int	id;
 	private node start, end;
 	private ArrayList<timetable_row> timetable;
 	private edge_type type;
 	private boolean feasible;
 
+	
+	/**
+	 * Prints the edge properties as a string
+	 * 
+	 * @return	edge properties
+	 * @see	edge
+	 */
+	@Override
+	public String toString(){
+		String text = "";
+		text += this.getType().toString();
+		if(!this.isFeasible())
+			text += " (unfeasible)";
+		return text;
+	}
+	
 	/**
 	 * @return the start
 	 */
@@ -87,6 +104,20 @@ public class edge {
 	 */
 	public void setFeasible(boolean feasible) {
 		this.feasible = feasible;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 }
