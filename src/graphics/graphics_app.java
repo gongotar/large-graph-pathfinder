@@ -1,3 +1,7 @@
+/**
+ * 
+ */
+
 package graphics;
 
 import java.awt.Dimension;
@@ -18,10 +22,14 @@ import model.edge;
 import model.network;
 import model.node;
 
+/** 
+ * @author Masoud Gholami
+ *
+ */
 public class graphics_app{
 
 	private static network netw;
-	private static Dimension Size;
+	private static Dimension Size = new Dimension(500, 500);
 	
 	public static void main(String[] args){
 		//network netw = test_data_generation.generate_netw(10);
@@ -87,10 +95,15 @@ public class graphics_app{
 	 */
     private static BasicVisualizationServer<node, edge> 
     			visualization_settings(DirectedGraph<node, edge> g){
+    				
+    	// Create a layout for setting the node locations
 		Layout<node, edge> l = new CircleLayout<node, edge>(g);
-		l.setSize(new Dimension(600,600));
-		setSize(l.getSize());
 		
+		// Set the layout size
+		l.setSize(getSize());
+		
+		// Create a transformer for getting the node coordinaton from
+		// each node object and converting it to 2D location
 		Transformer<node, Point2D> node_location = 
 				new Transformer<node, Point2D>() {
 
@@ -104,12 +117,18 @@ public class graphics_app{
 					}
 				};
 				
+		// Set the transformer of node location to the layout
 		l.setInitializer(node_location);
+		
+		// Create a renderer
 		Renderer<node, edge> r = new BasicRenderer<node, edge>();
 
+		// Create a VisualizationServer for the graph g and
+		// it's settings with the created layout
 		BasicVisualizationServer<node, edge> bvs = 
 				new BasicVisualizationServer<node, edge>(l);
 		
+		// Transformer for getting the node label considering the node properties		
 		Transformer<node, String> node_label =
 				new Transformer<node, String>() {
 					
@@ -120,6 +139,7 @@ public class graphics_app{
 					}
 				};		
 				
+		// Transformer for getting the edge label considering the edge properties
 		Transformer<edge, String> edge_label =
 				new Transformer<edge, String>() {
 					
@@ -130,9 +150,13 @@ public class graphics_app{
 					}
 				};
 								
+		// Set the transformers of edge and node labels
 		bvs.getRenderContext().setEdgeLabelTransformer(edge_label);
 		bvs.getRenderContext().setVertexLabelTransformer(node_label);
+		
+		// Set the renderer
 		bvs.setRenderer(r);
+		
 		return bvs;
 	}
 
@@ -142,7 +166,6 @@ public class graphics_app{
      * 
      * @param	g	the directed weighted graph
      * @see		graphics_app
-     * @author 	Masoud Gholami
      */
     private static DirectedGraph<node, edge> fill_graph() {
     	ArrayList<node> nodes = getNetw().getNodes();
@@ -169,7 +192,6 @@ public class graphics_app{
      * @param coordinate	the node coordination
      * @param Size	the size of the board 
      * @return	the y axe value of the location on the board
-     * @author Masoud Gholami
      */
 	private static int getCoordinate_y(coordinate coordinate) {
 		Dimension size = getSize();
@@ -192,7 +214,6 @@ public class graphics_app{
 		Dimension size = getSize();
 		coordinate c = new coordinate(0, coordinate.getLongitude());
 		int x = (int)c.getDistanceTo(new coordinate(0, -180));
-		System.out.println(size.width);
 		x = (int)(size.width * x / (Math.PI * CoordinateManager.EARTH_DIAMETER));
 		return x;
 	}
