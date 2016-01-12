@@ -77,6 +77,15 @@ public class edge {
 	public void setTimetable(ArrayList<timetable_row> timetable) {
 		this.timetable = new ArrayList<timetable_row>(timetable);
 	}
+	
+	/**
+	 * Adds a new row to the timetable of the edge
+	 * @param row	the new row to be added
+	 * @see edge
+	 */
+	public void addToTimetable(timetable_row row){
+		this.getTimetable().add(row);
+	}
 
 	/**
 	 * @return the type

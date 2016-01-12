@@ -43,28 +43,7 @@ public class graph_viewer{
 	private static int border = 20;
 	
 	public static void main(String[] args){
-		network netw = test_data_generation.generate_netw(15);
-		/*network netw = new network();
-		ArrayList<node> nodes = new ArrayList<node>();
-		node n1 = new node();
-		n1.setId(0);
-		n1.setType(enums.node_type.bus_station);
-		n1.setCoordinate(new coordinate(-50, 20));
-		node n2 = new node();
-		n2.setId(1);
-		n2.setType(enums.node_type.bus_station);
-		n2.setCoordinate(new coordinate(0, 0));
-		nodes.add(n1);
-		nodes.add(n2);
-		ArrayList<edge> edges = new ArrayList<edge>();
-		edge e = new edge();
-		e.setStart(n1);
-		e.setEnd(n2);
-		e.setType(enums.edge_type.bus);
-		edges.add(e);
-		netw.setNodes(nodes);
-		netw.setEdges(edges);
-		*/
+		network netw = test_data_generation.generate_netw(7);
 		show_graph(netw);
 	}
 	

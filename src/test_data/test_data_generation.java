@@ -13,6 +13,7 @@ import model.coordinate;
 import model.edge;
 import model.network;
 import model.node;
+import model.timetable_row;
 
 /**
  * @author Masoud Gholami
@@ -58,9 +59,10 @@ public class test_data_generation {
 			edges.get(i).setId(i);
 		}
 		
-		assign_netw_lines(nodes);
 		netw.setNodes(nodes);
 		netw.setEdges(edges);
+		assign_netw_lines(netw);
+		
 		return netw;
 	}
 
@@ -196,13 +198,103 @@ public class test_data_generation {
 	 * Assigns randomly generated lines and timetables to
 	 * each edge
 	 * 
-	 * @param	nodes	list of all of the nodes
+	 * @param	netw	the given network with all the nodes and edges
 	 * @see		test_data_generation
 	 */
-	private static void assign_netw_lines(ArrayList<node> nodes) {
-		// TODO Start from one node and randomly explore edges 
-		// and go to other nodes and then randomly switch lines
+	private static void assign_netw_lines(network netw){
+		// Start from one node and randomly explore edges 
+		// and go to other nodes and then randomly switch lines		
 		
+		ArrayList<node> nodes = netw.getNodes();
+		ArrayList<edge> edges = netw.getEdges();
+		
+		// the maximum number of the loops
+		int limit = (int)Math.pow(edges.size(), 2);
+		
+		// choose the starting node
+		node node = nodes.get(0);
+		
+		edge save_edge = null;
+		int count = 0;
+		
+		while(!all_processed(edges)){
+			// choose randomly one of the outgoing edges of the node
+			edge edge = choose_random_edge(node.getOutgoing_edges());
+			// get the node at the other side of the edge
+			node = edge.getEnd();
+			// generate a new random timetable row considering the 
+			// previous edge (timetable) and the current edge
+			timetable_row row = generate_timetable_row(edge, save_edge);
+			// add the new row the the timetable of the edge
+			edge.addToTimetable(row);
+			// save the edge for the next step (will be used as previous edge)
+			save_edge = edge;
+			count ++;
+			if(count > limit)
+				throw new RuntimeException("Not all the edges could be processed");
+		}
+				
+	}
+
+	/**
+	 * Chooses randomly an edge among the given edges.
+	 * The edges with less no. of timetable rows are more
+	 * likely to be chosen than the edges with more timetable
+	 * rows.
+	 * 
+	 * @param outgoing_edges the list of edges
+	 * @return	a randomly chosen edge
+	 */
+	private static model.edge choose_random_edge(ArrayList<edge> outgoing_edges) {
+		// the greater value means to give the edges with less no.
+		// of timetable rows more chance to be chosen
+		int fairness_degree = 4;
+		
+		ArrayList<Double> p = new ArrayList<Double>();
+		int max_row = 0;
+		// get the no. of timetable rows of each edge
+		for (edge edge : outgoing_edges) {
+			if(edge.getTimetable() == null)
+				p.add(0.0);
+			else {
+				p.add((double)edge.getTimetable().size());
+				if(max_row < edge.getTimetable().size())
+					max_row = edge.getTimetable().size();
+			}
+		}
+		// modify the computed values so that we can get
+		// more probabilities for those edges with less timetable rows
+		for (int i = 0; i < p.size(); i++) {
+			double v = Math.pow(max_row - p.get(i) + 1, fairness_degree);
+			p.set(i, v);
+		}
+		// choose randomly an index considering the given probabilities
+		int index = stochastic_choice(p);
+		// return the edge at the computed random index
+		return outgoing_edges.get(index);
+	}
+
+	/**
+	 * Checks if all of the edges are processed or not.
+	 * An edge is processed if there is at least one timetable row
+	 * assigned to it.
+	 * 
+	 * @param edges
+	 * @return true if all the edges are processed, false otherwise
+	 * @see test_data_generation
+	 */
+	private static boolean all_processed(ArrayList<edge> edges) {
+		for (edge edge : edges)
+			if(edge.getTimetable() == null)
+				return false;
+		
+		return true;
+	}
+
+	private static timetable_row generate_timetable_row(edge edge,
+			edge save_edge) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**
