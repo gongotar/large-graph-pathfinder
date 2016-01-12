@@ -184,11 +184,11 @@ public class coordinate implements Comparable<coordinate>{
 	  double delta_lat = Math.toRadians(this.getLatitude() - co.getLatitude());
 	  
 	  double a = Math.pow(Math.sin(delta_lat / 2), 2)
-			  + Math.cos(co.getLatitude()) * Math.cos(this.getLatitude())
+			  + Math.cos(Math.toRadians(co.getLatitude())) * 
+			  Math.cos(Math.toRadians(this.getLatitude()))
 			  * Math.pow(Math.sin(delta_long / 2), 2);
 	  
-	  double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-	  
+	  double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));	  
 	  double d = CoordinateManager.EARTH_DIAMETER * c / 2;
 	  
 	  return d;

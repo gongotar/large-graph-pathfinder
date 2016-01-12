@@ -4,7 +4,9 @@
 package test_data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+
 import enums.edge_type;
 import model.CoordinateManager;
 import model.coordinate;
@@ -43,8 +45,7 @@ public class test_data_generation {
 		
 		for (int i = 0; i < size; i++) {
 			city c = cities.get(i);
-			for (int j = 0; j < c.getStations().size(); j++)
-				nodes.addAll(c.getStations());
+			nodes.addAll(c.getStations());
 		}
 		
 		// generate edges
@@ -78,6 +79,7 @@ public class test_data_generation {
 				compute_city_center_coordinations(size);
 		
 		int node_id = 0;
+		
 		for (int i = 0; i < size; i++) {
 			city c = new city();
 			c.setId(i);
@@ -85,6 +87,7 @@ public class test_data_generation {
 			ArrayList<node> stations = gen_city_stations(c, node_id);
 			c.setStations(stations);
 			node_id = node_id + stations.size();
+			cities.add(c);
 		}
 		
 		return cities;
@@ -146,10 +149,13 @@ public class test_data_generation {
 	 * @see		test_data_generation
 	 */
 	private static coordinate random_coordinate_in_city(coordinate city_center) {
-		// city radius in meters
-		double city_radius = 15000;
+		// city radius in kilometers
+		double city_radius = 30;
 		
 		Random rnd = new Random();
+		
+		// kilometers to meters
+		city_radius = city_radius * new Float(1000);
 		
 		// distance in longitude direction, between 0 and 25
 		int long_dist = (int)(rnd.nextDouble() * city_radius);
@@ -212,13 +218,15 @@ public class test_data_generation {
 	 */
 	private static ArrayList<edge> assign_random_outgoing_edges(ArrayList<node> nodes, int i) {
 		// greater values results shorter edges
-		double propagation_degree = 4;
+		double propagation_degree = 8;
+		// maximum no. of edges
+		int maximum_node_consideration = 8;
 		// minimum no. of nodes to be considered for being target_node
-		int	minimum_node_consideration = 3;
+		int	minimum_node_consideration = 2;
 		// minimum no. of edges for each node
 		int min_edge = 1;
 		// maximum no. of edges for each node
-		int max_edge = 8;
+		int max_edge = 5;
 		
 		node node = nodes.get(i);
 		ArrayList<Double> p = new ArrayList<Double>(); // maximum length is the number of nodes
@@ -231,6 +239,7 @@ public class test_data_generation {
 			node target_node = nodes.get(j);
 			double dist = node.getCoordinate()
 					.getDistanceTo(target_node.getCoordinate());
+			
 			p.add(dist);
 			if(max_distance < dist)
 				max_distance = dist;
@@ -238,31 +247,39 @@ public class test_data_generation {
 				min_distance = dist;
 		}
 		
-		// p preparation so that it contains more values (probability)
-		// for the nodes in the nearby
-		
-		double treshold = 0;
+		// modify p so that it contains proper probabilities for each node  
 		for (int j = 0; j < p.size(); j++){
 			double modified_value = Math.pow(max_distance + min_distance - p.get(j), propagation_degree);
 			p.set(j, modified_value);
-			treshold += modified_value;
 		}
 		
-		// eliminate nodes that are far away
+		ArrayList<Double> buffer = new ArrayList<Double>(p);
+		int[] max_index = new int[p.size()];
+		Arrays.fill(max_index, 0);
 		
-		treshold = treshold / p.size();
-		int more_than_treshold = 0;
+		// choose a random number between minimum_node_consideration
+		// and max_node_consideration
+		Random rand = new Random();
+		int node_consideration_no = (int)((rand.nextDouble() * 
+				(maximum_node_consideration - minimum_node_consideration)) + minimum_node_consideration);
 		
 		if(minimum_node_consideration < nodes.size()){
-			while(more_than_treshold <= minimum_node_consideration){
-				more_than_treshold = 0;
-				for (double d : p)
-					if(d >= treshold--)
-						more_than_treshold++;
+			for (int j = 0; j < Math.min(node_consideration_no, p.size()); j++) {
+				double n_max = -1;
+				int id = -1;
+				for (int k = 0; k < buffer.size(); k++){
+					if(buffer.get(k) > n_max){
+						n_max = buffer.get(k);
+						id = k; 
+					}
+				}
+				max_index[id] = 1;
+				buffer.set(id, -1.0);
 			}
-			treshold++;
+
+			// keep only first node_consideration_no number of nodes
 			for (int j = 0; j < p.size(); j++)
-				if(p.get(j) < treshold)
+				if(max_index[j] != 1)
 					p.set(j, 0.0);	// set the probability to zero (far away nodes)
 		}
 		
@@ -281,8 +298,8 @@ public class test_data_generation {
 		// Choose n items from p, n between a min & max
 		
 		// Choose a random value between min and max no. of edges
-		Random rand = new Random();
 		int n = (int)(rand.nextDouble() * (max_edge - min_edge) + min_edge);
+		n = Math.min(n, p.size());
 		ArrayList<Integer> indexes = stochastic_choice(p, n);
 		
 		// Create edges
@@ -292,7 +309,7 @@ public class test_data_generation {
 		for (int j = 0; j < indexes.size(); j++) {
 			int index = indexes.get(j);
 			if(index >= i)
-				indexes.set(j, index ++);
+				indexes.set(j, ++ index);
 			edge new_edge = new edge();
 			new_edge.setStart(node);
 			new_edge.setEnd(nodes.get(index));
@@ -440,6 +457,10 @@ public class test_data_generation {
 			if(rand <= flag)
 				return i;
 		}
+		System.out.println(p.toString());
+		System.out.println(rand);
+		System.err.println(flag);
+		System.out.println(sum);
 		return -1;
 	}
 	

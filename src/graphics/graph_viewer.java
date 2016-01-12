@@ -4,16 +4,26 @@
 
 package graphics;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+
 import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import org.apache.commons.collections15.Transformer;
+
+import test_data.test_data_generation;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.renderers.BasicRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import model.CoordinateManager;
@@ -26,14 +36,15 @@ import model.node;
  * @author Masoud Gholami
  *
  */
-public class graphics_app{
+public class graph_viewer{
 
 	private static network netw;
-	private static Dimension Size = new Dimension(500, 500);
+	private static Dimension Size = new Dimension(700, 500);
+	private static int border = 20;
 	
 	public static void main(String[] args){
-		//network netw = test_data_generation.generate_netw(10);
-		network netw = new network();
+		network netw = test_data_generation.generate_netw(15);
+		/*network netw = new network();
 		ArrayList<node> nodes = new ArrayList<node>();
 		node n1 = new node();
 		n1.setId(0);
@@ -53,6 +64,7 @@ public class graphics_app{
 		edges.add(e);
 		netw.setNodes(nodes);
 		netw.setEdges(edges);
+		*/
 		show_graph(netw);
 	}
 	
@@ -60,27 +72,40 @@ public class graphics_app{
 	 * Creates a view for the given network
 	 * 
 	 * @param netw	the given network
-	 * @see	graphics_app
+	 * @see	graph_viewer
 	 */
 	private static void show_graph(network netw) {
 		setNetw(netw);
 		DirectedGraph<node, edge> g = fill_graph();
-		BasicVisualizationServer<node,edge> bvs = 
+		VisualizationViewer<node,edge> bvs = 
 				visualization_settings(g);
 		create_visualization(bvs);
 	}
 
 	/**
-	 * Creates the visualization for the given BasicVisualizationServer 
+	 * Creates the visualization for the given VisualizationViewer 
 	 * containing the graph. After calling this method the graph
 	 * will be displayed
 	 * 
-	 * @param	bvs		BasicVisualizationServer
-	 * @see	graphics_app
+	 * @param	bvs		VisualizationViewer
+	 * @see	graph_viewer
 	 */
 	private static void create_visualization(
-			BasicVisualizationServer<node, edge> bvs) {
+			VisualizationViewer<node, edge> bvs) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		JFrame frame = new JFrame();
+		frame.setSize(getFrameSize());
+		frame.setPreferredSize(getFrameSize());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(bvs);
 		frame.pack();
@@ -90,10 +115,10 @@ public class graphics_app{
 	/**
 	 * Sets the needed visualization properties
 	 * 
-	 * @return BasicVisualizationServer
-	 * @see graphics_app
+	 * @return VisualizationViewer
+	 * @see graph_viewer
 	 */
-    private static BasicVisualizationServer<node, edge> 
+    private static VisualizationViewer<node, edge> 
     			visualization_settings(DirectedGraph<node, edge> g){
     				
     	// Create a layout for setting the node locations
@@ -125,10 +150,10 @@ public class graphics_app{
 
 		// Create a VisualizationServer for the graph g and
 		// it's settings with the created layout
-		BasicVisualizationServer<node, edge> bvs = 
-				new BasicVisualizationServer<node, edge>(l);
+		VisualizationViewer<node, edge> vv = 
+				new VisualizationViewer<node, edge>(l);
 		
-		// Transformer for getting the node label considering the node properties		
+		// Transformer for setting the node label considering the node properties		
 		Transformer<node, String> node_label =
 				new Transformer<node, String>() {
 					
@@ -139,7 +164,7 @@ public class graphics_app{
 					}
 				};		
 				
-		// Transformer for getting the edge label considering the edge properties
+		// Transformer for setting the edge label considering the edge properties
 		Transformer<edge, String> edge_label =
 				new Transformer<edge, String>() {
 					
@@ -149,15 +174,33 @@ public class graphics_app{
 						return arg0.toString();
 					}
 				};
+
+		// Transformer for setting node color
+		Transformer<node, Paint> node_fill = 
+				new Transformer<node, Paint>() {
+					
+					@Override
+					public Paint transform(node arg0) {
+						return Color.BLUE;
+					}
+				};
 								
-		// Set the transformers of edge and node labels
-		bvs.getRenderContext().setEdgeLabelTransformer(edge_label);
-		bvs.getRenderContext().setVertexLabelTransformer(node_label);
+		// Set the transformers
+		vv.getRenderContext().setEdgeLabelTransformer(edge_label);
+		vv.getRenderContext().setVertexLabelTransformer(node_label);
+		vv.getRenderContext().setVertexFillPaintTransformer(node_fill);
 		
 		// Set the renderer
-		bvs.setRenderer(r);
+		vv.setRenderer(r);
 		
-		return bvs;
+		// Set size
+		vv.setSize(getSize());
+		
+		DefaultModalGraphMouse<node, edge> gm =
+				new DefaultModalGraphMouse<node, edge>();
+		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+		vv.setGraphMouse(gm);
+		return vv;
 	}
 
 	/**
@@ -165,7 +208,7 @@ public class graphics_app{
      * given about the network (nodes, edges, ...)
      * 
      * @param	g	the directed weighted graph
-     * @see		graphics_app
+     * @see		graph_viewer
      */
     private static DirectedGraph<node, edge> fill_graph() {
     	ArrayList<node> nodes = getNetw().getNodes();
@@ -195,9 +238,9 @@ public class graphics_app{
      */
 	private static int getCoordinate_y(coordinate coordinate) {
 		Dimension size = getSize();
-		coordinate c = new coordinate(coordinate.getLatitude(), 0);
-		int y = (int)c.getDistanceTo(new coordinate(-90, 0));
-		y = (int)(size.height * y / (Math.PI * CoordinateManager.EARTH_DIAMETER));
+		double distance = CoordinateManager.latitudeConstant()
+				* Math.abs(coordinate.getLatitude() + 90);
+		int y = (int)(2 * size.height * distance / (Math.PI * CoordinateManager.EARTH_DIAMETER));
 		return y;
 	}
 
@@ -212,9 +255,10 @@ public class graphics_app{
      */
 	private static int getCoordinate_x(coordinate coordinate) {
 		Dimension size = getSize();
-		coordinate c = new coordinate(0, coordinate.getLongitude());
-		int x = (int)c.getDistanceTo(new coordinate(0, -180));
-		x = (int)(size.width * x / (Math.PI * CoordinateManager.EARTH_DIAMETER));
+		double distance = CoordinateManager.longitudeConstant(coordinate.getLatitude())
+				* Math.abs(coordinate.getLongitude() + 180);
+		int x = (int)(size.width * distance / (Math.PI * 
+				CoordinateManager.EARTH_DIAMETER * Math.cos(Math.toRadians(coordinate.getLatitude()))));
 		return x;
 	}
 
@@ -229,7 +273,7 @@ public class graphics_app{
 	 * @param netw the netw to set
 	 */
 	public static void setNetw(network netw) {
-		graphics_app.netw = netw.clone();
+		graph_viewer.netw = netw.clone();
 	}
 
 	/**
@@ -246,4 +290,29 @@ public class graphics_app{
 		Size = size;
 	}
 
+	/**
+	 * Returns a Dimension a little bit bigger than the Size
+	 * 
+	 * @return frame size a little bigger than the size
+	 * @see graph_viewer
+	 */
+	private static Dimension getFrameSize() {
+		Dimension fd =  new Dimension(getSize().width + getBorder(),
+				getSize().height + getBorder());
+		return fd;
+	}
+
+	/**
+	 * @return the border
+	 */
+	public static int getBorder() {
+		return border;
+	}
+
+	/**
+	 * @param border the border to set
+	 */
+	public static void setBorder(int border) {
+		graph_viewer.border = border;
+	}
 }

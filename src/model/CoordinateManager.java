@@ -86,7 +86,7 @@ public class CoordinateManager {
 	  public static double longitudeConstant(float latitude) {
 	  
 	    //return Math.abs( Math.cos(Math.abs(latitude)));
-	    return EARTH_DIAMETER * Math.PI * Math.abs(Math.cos(Math.abs(latitude))) / Float.valueOf("360");
+	    return EARTH_DIAMETER * Math.PI * Math.abs(Math.cos(Math.toRadians(latitude))) / Float.valueOf("360");
 	  
 	  }
 	  
@@ -111,12 +111,18 @@ public class CoordinateManager {
 	    
 	    // calculate the new latitude
 	    double newLat = latitude + (kilometers / latitudeConstant());
+	    float newLong = longitude;
 	    
-	    return new coordinate(new Float(newLat).floatValue(), longitude);
+	    if(!isValidLatitude((float)newLat)){
+	    	newLong = computeLongitudeByLatitude(longitude, newLat);
+	    	newLat = computeValidLatitude(newLat);
+	    }
+	    
+	    return new coordinate(new Float(newLat).floatValue(), newLong);
 	  
 	  }
-	  
-	  /**
+	 
+	/**
 	   * A method to add distance in a southerly direction to a coordinate
 	   *
 	   * @param latitude  a latitude coordinate in decimal notation
@@ -138,11 +144,111 @@ public class CoordinateManager {
 	    // calculate the new latitude
 	    double newLat = latitude - (kilometers / latitudeConstant());
 	    
-	    return new coordinate(new Float(newLat).floatValue(), longitude);
+	    float newLong = longitude;
+	    
+	    if(!isValidLatitude((float)newLat)){
+	    	newLong = computeLongitudeByLatitude(longitude, newLat);
+	    	newLat = computeValidLatitude(newLat);
+	    }
+	    
+	    return new coordinate(new Float(newLat).floatValue(), newLong);
 	  
 	  }
 	  
 	  /**
+	   * Gets an invalid latitude (caused by adding two latitudes) and 
+	   * computes the valid result
+	   *   
+	   * @param Latitude 	the invalid latitude
+	   * @return	valid latitude
+	   * @see CoordinateManager
+	   * @author Masoud Gholami
+	   */
+	  private static double computeValidLatitude(double latitude) {
+		boolean negativ = false;
+		if(latitude < 0){
+			latitude = - latitude;
+			negativ = true;
+		}
+		int div =  (int)(latitude / new Float(180));
+		double rest = latitude % new Float(180);
+		double result;
+		
+		if(rest > new Float(90))
+			result = new Float(180) - rest;
+		else
+			result = rest;
+		
+		if((div & 1) == 1)
+			result = - result;
+		
+		if(negativ)
+			result = -result;
+		
+		return result;
+	  }
+	  
+	  /**
+	   * Gets the new latitude and decides if the longitude should be
+	   * changed based on the new latitude or not and computes the
+	   * new longitude
+	   * 
+	   * @param longitude	the invalid longitude
+	   * @param newLat		the latitude to be considered
+	   * @return new longitude considering the new latitude
+	   * @see CoordinateManager
+	   * @author Masoud Gholami
+	   */
+	  private static float computeLongitudeByLatitude(float longitude,
+			double newLat) {
+		  boolean negativ = false;
+		  if(longitude < 0){
+			  longitude = - longitude;
+			  negativ = true;
+		  }
+		  float result;
+		  
+		  int div =  (int)(longitude / new Float(90));
+		  if((div % 4) == 0 || (div % 4) == 3)
+			  result = longitude;
+		  else
+			  result = computeValidLongitude(longitude + 180);
+		  
+		  if(negativ)
+			  result = - result;
+		  
+		  return result;
+	  }
+
+	  /**
+	   * Gets an invalid longitude (caused by adding two longitudes) and 
+	   * computes the valid result
+	   *   
+	   * @param Longitude	the invalid longitude
+	   * @return	valid longitude
+	   * @see CoordinateManager
+	   * @author Masoud Gholami
+	   */
+	  private static float computeValidLongitude(float longitude) {
+		  boolean negativ = false;
+		  if(longitude < 0){
+			  longitude = - longitude;
+			  negativ = true;
+		  }
+		  int div =  (int)(longitude / new Float(180));
+		  float result = longitude % new Float(180);
+			
+		  if((div & 1) == 1)
+			result = - result;
+			
+		  if(negativ)
+			  result = - result;
+		  
+		  return result;
+	  }
+
+
+	/**
 	   * A method to add distance in an easterly direction to a coordinate
 	   *
 	   * @param latitude  a latitude coordinate in decimal notation
@@ -158,8 +264,10 @@ public class CoordinateManager {
 	      throw new IllegalArgumentException("All parameters are required and must be valid");
 	    }
 	    
+	    float kilometers = distance / new Float(1000);
 	    // calculate the new longitude
-	    double newLng = longitude + (distance / longitudeConstant(latitude));
+	    double newLng = longitude + (kilometers / longitudeConstant(latitude));
+	    newLng = computeValidLongitude(new Float(newLng));
 	    
 	    return new coordinate(latitude, new Float(newLng).floatValue());  
 	  }
@@ -180,8 +288,10 @@ public class CoordinateManager {
 	      throw new IllegalArgumentException("All parameters are required and must be valid");
 	    }
 	    
+	    float kilometers = distance / new Float(1000);
 	    // calculate the new longitude
-	    double newLng = longitude - (distance / longitudeConstant(latitude));
+	    double newLng = longitude - (kilometers / longitudeConstant(latitude));
+	    newLng = computeValidLongitude(new Float(newLng));
 	    
 	    return new coordinate(latitude, new Float(newLng).floatValue());  
 	  }

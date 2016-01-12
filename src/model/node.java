@@ -33,7 +33,7 @@ public class node {
 	public String toString(){
 		String text = "";
 		if(this.getCity() != null)
-			text += "City: " + this.getCity().toString() + ", ";
+			text += "City: " + this.getCity().getId() + ", ";
 		text += this.getType().toString();
 		text += ", " + this.getId();
 		return text;
