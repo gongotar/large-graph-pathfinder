@@ -16,14 +16,16 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.collections15.Transformer;
 
-import test_data.test_data_generation;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.BasicRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import model.CoordinateManager;
@@ -43,10 +45,41 @@ public class graph_viewer{
 	private static int border = 20;
 	
 	public static void main(String[] args){
-		network netw = test_data_generation.generate_netw(7);
-		show_graph(netw);
+		// network netw = test_data_generation.generate_netw(7);
+		// show_graph(netw);
+		network netw = create_graph_visually();
+		//show_graph(netw);
 	}
 	
+	/**
+	 * Prepares a visualization to be able to create a 
+	 * graph interactively
+	 *  
+	 * @return the created graph
+	 * @see	graph_viewer
+	 */
+	private static network create_graph_visually() {
+    	editing_graph eg =
+        		new editing_graph();
+		// Layout<V, E>, VisualizationViewer<V,E>
+		Layout<node, edge> layout = new StaticLayout<node, edge>(eg.getGraph());
+		layout.setSize(new Dimension(300,300));
+		VisualizationViewer<node, edge> vv =
+		new VisualizationViewer<node, edge>(layout);
+		vv.setPreferredSize(new Dimension(350,350));
+		// Show vertex and edge labels
+		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<node>());
+		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<edge>());
+		// Create a graph mouse and add it to the visualization viewer
+		//
+		EditingModalGraphMouse<node, edge> gm =
+		new EditingModalGraphMouse<node, edge>(vv.getRenderContext(),
+		eg.getVertexFactory(), eg.getEdgeFactory());
+		vv.setGraphMouse(gm);
+		create_visualization(vv);
+				return null;
+	}
+
 	/**
 	 * Creates a view for the given network
 	 * 

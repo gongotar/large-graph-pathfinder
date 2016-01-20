@@ -1,8 +1,10 @@
 package core;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+
 import enums.edge_type;
 import model.connection;
 import model.edge;
@@ -30,17 +32,19 @@ public class dijkstra {
 	 * Computes all of the Pareto-optimal solutions in a network (graph)
 	 * using the modified (generalized) Dijkstra algorithm.
 	 * 
-	 * @param	netw	a digraph of nodes and weighted edges (Time table as the weight)
-	 * @param	start	a set of possible start nodes
+	 * @param	netw		a digraph of nodes and weighted edges (Time table as the weight)
+	 * @param	startnodes	a set of possible start nodes
+	 * @param	starttime	start time of the journey
 	 * @return			a set of Pareto-optimal labels defining paths in the graph
 	 * @see				dijkstra 
 	 */
 	
-	public static void pareto_opt(ArrayList<node> start){
+	public static void pareto_opt(ArrayList<node> startnodes,
+			LocalDateTime starttime){
 		
 		PriorityQueue<label> pq = new PriorityQueue<label>();
 		
-		for (node n : start) {
+		for (node n : startnodes) {
 			label l = new label(n);
 			pq.add(l);
 		}
@@ -50,7 +54,7 @@ public class dijkstra {
 			node node = l.getNode();
 			for (edge e : node.getOutgoing_edges()) {
 				if(!e.isFeasible()) continue;						// ignore this edge
-				label new_label = create_label(l, e);
+				label new_label = create_label(l, e, starttime);
 				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels 
 					continue;
 				new_label.setNode(e.getEnd());
@@ -123,12 +127,14 @@ public class dijkstra {
 	 * adding a new edge to it considering the aggregation
 	 * of the edge attributes and the label attributes
 	 * 
-	 * @param	l		the previous label
-	 * @param	e		to be added edge
+	 * @param	l			the previous label
+	 * @param	e			to be added edge
+	 * @param	starttime	the start time of the journey
 	 * @return	label	new label containing the previous label and the new edge
 	 * @see		dijkstra
 	 */
-	private static label create_label(label l, edge e) {
+	private static label create_label(label l, edge e, 
+			LocalDateTime starttime) {
 		
 		label new_label = new label();				// create the label
 		Integer id = find_edge_id(l, e);
@@ -161,6 +167,8 @@ public class dijkstra {
 		
 		double new_risk = compute_new_risk(l, row, e.getType());
 		new_label.setRisk(new_risk);				// set the new risk
+		
+		new_label.setStart(starttime);
 		
 		return new_label;
 	}
@@ -239,16 +247,15 @@ public class dijkstra {
 	 *  @see dijkstra
 	 */
 	private static Duration compute_new_duration(label l, timetable_row row, edge_type edge_type) {
-		timetable_row first_row = get_label_row(l, 0);					// get the first row
-		LocalDateTime path_start_time =	first_row.getStart_time();		// get the start time of the first edge using the id 
-																		// compute the duration using the start time of
-																		// the journey and the end time of the new edge
+		 
+		// compute the duration using the start time of
+		// the journey and the end time of the new edge
 		Duration duration;
 		if(edge_type.equals(enums.edge_type.walk))						// if walking edge then simply add
 																		// the edge duration to the label duration
-			duration = Duration.between(row.getEnd_time(), row.getStart_time()).plus(l.getDuration());
+			duration = Duration.between(row.getStart_time(), row.getEnd_time()).plus(l.getDuration());
 		else
-			duration = Duration.between(row.getEnd_time(), path_start_time);
+			duration = Duration.between(l.getStart(), row.getEnd_time());
 		return duration;
 	}
 
@@ -285,21 +292,31 @@ public class dijkstra {
 			return 0;
 		int size = l.getPath().size();
 		timetable_row last_row = get_label_row(l, size - 1);	// get the last row of the path in the label
-		LocalDateTime arrived_at = last_row.getEnd_time();		// get the arriving time of the path
+		LocalTime arrived_at = last_row.getEnd_time();		// get the arriving time of the path
 		ArrayList<timetable_row> timetable = 					// get the timetable of the new edge
 				new ArrayList<timetable_row>(e.getTimetable());
 		
-		int index = 0, min_index = index;
-		Duration waiting_time = Duration.between(LocalDateTime.MAX, arrived_at);
+		int index = 0, min_index = -1;
+		Duration waiting_time = Duration.between(arrived_at, LocalDateTime.MAX);
 		for (timetable_row row : timetable) {					// finding the minimum waiting time
 			if(arrived_at.isBefore(row.getStart_time().minusMinutes(minimum_waiting_minutes))
-					&& Duration.between(row.getStart_time(), arrived_at).compareTo(waiting_time) < 0){
-				waiting_time = Duration.between(row.getStart_time(), arrived_at);
+					&& Duration.between(arrived_at, row.getStart_time()).compareTo(waiting_time) < 0){
+				waiting_time = Duration.between(arrived_at, row.getStart_time());
 				min_index = index;
 			}
 			index++;
 		}
-		
+		// if late in the night, go with the first departure next day
+		if(min_index == -1){
+			LocalTime first_departure = LocalTime.MAX;
+			for (int i = 0; i < timetable.size(); i++) {
+				if(first_departure.isAfter(timetable.get(i).getStart_time())){
+					min_index = i;
+					first_departure = timetable.get(i).getStart_time();
+				}
+			}
+		}
+			 
 		return min_index;
 	}
 	

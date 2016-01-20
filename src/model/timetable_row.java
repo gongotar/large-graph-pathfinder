@@ -1,15 +1,22 @@
 package model;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class timetable_row{
 
 	private int 			id;
 	private int 			line;
 	private double 			cost;
-	private LocalDateTime 	start_time;
-	private LocalDateTime 	end_time;
+	private LocalTime 	start_time;
+	private LocalTime 	end_time;
 	private double 			variation;
+	
+	/**
+	 * Default class constructor
+	 */
+	public timetable_row(){
+		
+	}
 	
 	/**
 	 * Class constructor setting all of the class attributes
@@ -21,9 +28,9 @@ public class timetable_row{
 	 * @param	end_time	the end time of the connection
 	 * @param	variation	the duration variance (risk) of taking the connection 
 	 */
-	public timetable_row(int id, int line, double cost, LocalDateTime start_time, 
-			LocalDateTime end_time, double variation){
-		
+	public timetable_row(int id, int line, double cost, LocalTime start_time, 
+			LocalTime end_time, double variation){
+		this();
 		this.setId(id);
 		this.setLine(line);
 		this.setCost(cost);
@@ -31,6 +38,23 @@ public class timetable_row{
 		this.setEnd_time(end_time);
 		this.setVariation(variation);
 		
+	}
+	
+	/**
+	 * Prints the row properties as a string
+	 * 
+	 * @return	row properties
+	 * @see	timetable_row
+	 */
+	@Override
+	public String toString(){
+		String text = "";
+		text += this.getStart_time();
+		text += " - ";
+		text += this.getEnd_time();
+		text += "/";
+		text += this.getLine();
+		return text;
 	}
 	
 	/**
@@ -72,25 +96,25 @@ public class timetable_row{
 	/**
 	 * @return the start_time
 	 */
-	public LocalDateTime getStart_time() {
+	public LocalTime getStart_time() {
 		return start_time;
 	}
 	/**
 	 * @param start_time the start_time to set
 	 */
-	public void setStart_time(LocalDateTime start_time) {
+	public void setStart_time(LocalTime start_time) {
 		this.start_time = start_time;
 	}
 	/**
 	 * @return the end_time
 	 */
-	public LocalDateTime getEnd_time() {
+	public LocalTime getEnd_time() {
 		return end_time;
 	}
 	/**
 	 * @param end_time the end_time to set
 	 */
-	public void setEnd_time(LocalDateTime end_time) {
+	public void setEnd_time(LocalTime end_time) {
 		this.end_time = end_time;
 	}
 	/**

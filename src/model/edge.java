@@ -20,6 +20,12 @@ public class edge {
 	private edge_type type;
 	private boolean feasible;
 
+	/**
+	 * Default class constructor
+	 */
+	public edge() {
+		timetable = new ArrayList<timetable_row>();
+	}
 	
 	/**
 	 * Prints the edge properties as a string
@@ -31,8 +37,12 @@ public class edge {
 	public String toString(){
 		String text = "";
 		text += this.getType().toString();
-		if(!this.isFeasible())
-			text += " (unfeasible)";
+		text += ", ";
+		text += this.getStart().getId();
+		text += ":";
+		text += this.getEnd().getId();
+		text += ", ";
+		text += this.getTimetable();
 		return text;
 	}
 	

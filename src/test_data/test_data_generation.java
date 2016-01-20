@@ -3,6 +3,8 @@
  */
 package test_data;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -219,33 +221,76 @@ public class test_data_generation {
 		
 		while(!all_processed(edges)){
 			// choose randomly one of the outgoing edges of the node
-			edge edge = choose_random_edge(node.getOutgoing_edges());
+			edge edge = choose_random_edge(node.getOutgoing_edges(), save_edge);
 			// get the node at the other side of the edge
 			node = edge.getEnd();
-			// generate a new random timetable row considering the 
+			// generate a set of new random timetable rows considering the 
 			// previous edge (timetable) and the current edge
-			timetable_row row = generate_timetable_row(edge, save_edge);
-			// add the new row the the timetable of the edge
-			edge.addToTimetable(row);
+			ArrayList<timetable_row> rows = generate_timetable_row(edge, save_edge);
+			// add new rows the the timetable of the edge
+			edge.getTimetable().addAll(rows);
 			// save the edge for the next step (will be used as previous edge)
 			save_edge = edge;
 			count ++;
 			if(count > limit)
-				throw new RuntimeException("Not all the edges could be processed");
+				//throw new RuntimeException("Not all the edges could be processed");
+				break;
 		}
-				
+			
+		// process walking edges
+		for (edge edge : edges) {
+			if(edge.getType().equals(enums.edge_type.walk)){
+				edge.setTimetable(new ArrayList<timetable_row>());
+				timetable_row row = generate_walking_row(edge, 0);
+				edge.addToTimetable(row);
+			}
+		}
+		
+	}
+
+	/**
+	 * Generates for a walking edge a new timetable row
+	 * with all the properties needed for a timetable row
+	 * of a walking edge 
+	 * @param edge	the walking edge
+	 * @param line_no line no. reaching this edge
+	 * @return	a new timetable row
+	 * @see	test_data_generation
+	 */
+	private static timetable_row generate_walking_row(edge edge, int line_no) {
+		// walking speed (= time needed to walk one kilometer)
+		Duration walking_speed = Duration.ofMinutes(10);
+		
+		timetable_row row = new timetable_row();
+		row.setCost(0);
+		row.setId(0);
+		row.setLine(0);
+		row.setVariation(0);
+		row.setStart_time(LocalTime.of(8, 0));
+		// get the edge length in kilometers
+		long distance = (long)edge.getStart().getCoordinate().
+				getDistanceTo(edge.getEnd().getCoordinate());
+		Duration duration = walking_speed.multipliedBy(distance);
+		// maximum duration 23 hours
+		if(duration.compareTo(Duration.ofHours(23)) > 0)
+			duration = Duration.ofHours(23);
+		
+		row.setEnd_time(row.getStart_time()
+				.plus(duration));
+		return row;
 	}
 
 	/**
 	 * Chooses randomly an edge among the given edges.
 	 * The edges with less no. of timetable rows are more
 	 * likely to be chosen than the edges with more timetable
-	 * rows.
+	 * rows. walking edges won't be chosen
 	 * 
 	 * @param outgoing_edges the list of edges
+	 * @param save_edge 	the previous edge for avoiding repeated returning 
 	 * @return	a randomly chosen edge
 	 */
-	private static model.edge choose_random_edge(ArrayList<edge> outgoing_edges) {
+	private static model.edge choose_random_edge(ArrayList<edge> outgoing_edges, edge save_edge) {
 		// the greater value means to give the edges with less no.
 		// of timetable rows more chance to be chosen
 		int fairness_degree = 4;
@@ -268,10 +313,46 @@ public class test_data_generation {
 			double v = Math.pow(max_row - p.get(i) + 1, fairness_degree);
 			p.set(i, v);
 		}
+		
+		for (int i = 0; i < p.size(); i++) {
+			if(save_edge != null){
+				// no returning edges
+				if(outgoing_edges.get(i).getEnd().equals(save_edge.getStart()))
+					p.set(i, 0.0);
+				// if the line is already added to the edge
+				//if(found_line(save_edge,outgoing_edges.get(i)))
+					//p.set(i, 0.0);
+			}
+					
+		}
+				
 		// choose randomly an index considering the given probabilities
 		int index = stochastic_choice(p);
 		// return the edge at the computed random index
 		return outgoing_edges.get(index);
+	}
+
+	/**
+	 * Checks if the last line added to the save_edge is already
+	 * been added to the edge or not
+	 * @param save_edge	previous edge
+	 * @param edge		current edge
+	 * @return	a boolean value deciding whether the last line in the 
+	 * 					save_edge is already added to the edge (true)
+	 * 					or not (false)
+	 * @see test_data_generation
+	 */
+	private static boolean found_line(edge save_edge, edge edge) {
+		int time_table_size = save_edge.getTimetable().size();
+		// get the last added line
+		int line = save_edge.getTimetable()
+				.get(time_table_size - 1).getLine();
+		ArrayList<timetable_row> timetable = edge.getTimetable();
+		for (timetable_row row : timetable)
+			if(row.getLine() == line)
+				return true;
+		
+		return false;
 	}
 
 	/**
@@ -285,16 +366,177 @@ public class test_data_generation {
 	 */
 	private static boolean all_processed(ArrayList<edge> edges) {
 		for (edge edge : edges)
-			if(edge.getTimetable() == null)
+			if(edge.getTimetable().size() == 0 && 
+			!edge.getType().equals(enums.edge_type.walk))
 				return false;
 		
 		return true;
 	}
 
-	private static timetable_row generate_timetable_row(edge edge,
+	/**
+	 * Generates a new timetable row considering the edge length
+	 * and previous edge properties.
+	 * The results are randomized
+	 * @param edge			the current edge
+	 * @param save_edge		the previous edge
+	 * @return	a set of new timetable rows for the given edge
+	 * @see test_data_generation
+	 */
+	private static ArrayList<timetable_row> generate_timetable_row(edge edge,
 			edge save_edge) {
-		// TODO Auto-generated method stub
-		return null;
+		// average line length
+		int	line_len = 10;
+		
+		// stay at each station (minutes)
+		int waiting_minutes = 2;
+		
+		// no. of repeated lines at each station
+		int line_no = 4;
+		
+		// cost factor
+		double[] cost_factor = new double[]{
+				1,			// bus
+				1.5,		// car
+				1.2			// train
+		};
+		
+		// cost/distance constant. normal cost per kilometer (euro)
+		double cost_dist_const = 0.1;
+		
+		// cost variance
+		double cost_variance = 0.05;
+		
+		// duration factor
+		double[] duration_factor = new double[]{
+				1.6,		// bus
+				1.3,		// car
+				1.0			// train
+		};
+		
+		// duration/distance constant. normal duration per kilometer
+		Duration duration_dist_const = Duration.ofSeconds(40);
+		
+		// duration variance
+		double duration_variance = 0.05;
+		
+		// code
+		
+		ArrayList<timetable_row> new_rows = new ArrayList<timetable_row>();
+		for (int i = 0; i < line_no; i++)
+			new_rows.add(new timetable_row());	
+		
+		
+		// compute the line
+	
+		// generate a random no. used to decide if line should end here
+		// and go to the next line (line + 1) or use the same line
+		Random rnd = new Random();
+		int line = 0;
+		boolean line_changed = false;
+		if(save_edge != null){
+			double random_area = rnd.nextDouble();
+			// get the line used to reach this edge
+			if(edge.getTimetable().size() != 0)
+				line = save_edge.getTimetable()
+					.get(save_edge.getTimetable().size() - 1).getLine();
+			// change the line by the probability of 1.0 / line_len
+			if(random_area < (1.0 / line_len) || 
+					!edge.getType().equals(save_edge.getType())
+					|| found_line(save_edge, edge)){
+				line ++;
+				line_changed = true;
+			}
+		}
+		else
+			line_changed = true;
+		
+		if(edge.getType().equals(enums.edge_type.walk)){
+			ArrayList<timetable_row> ret = new ArrayList<timetable_row>();
+			ret.add(generate_walking_row(edge, line));
+			return ret;
+		}
+		
+		for (int i = 0; i < new_rows.size(); i++)
+			new_rows.get(i).setLine(line);
+		
+		// compute the id
+		
+		// get the last timetable row id of the edge
+		int id = 0;
+		if(edge.getTimetable().size() != 0)
+			id = edge.getTimetable()
+				.get(edge.getTimetable().size() - 1).getId();
+		
+		for (int i = 0; i < new_rows.size(); i++)
+			new_rows.get(i).setId(++id);
+		
+		// get the edge length in kilometers
+		double distance = edge.getStart().getCoordinate().
+				getDistanceTo(edge.getEnd().getCoordinate());
+		
+		// get the type cost/duration factor
+		edge_type[] types = enums.edge_type.values();
+		double type_cost_factor = 0;
+		double type_duration_factor = 0;
+		for (int i = 0; i < types.length; i++) {
+			if(edge.getType().equals(types[i])){
+				type_cost_factor = cost_factor[i];
+				type_duration_factor = duration_factor[i];
+			}
+		}
+		
+		// compute random costs
+		for (int i = 0; i < new_rows.size(); i++){
+			// generate a random cost variance
+			double cost_rnd_var = 1 - (cost_variance 
+					* (rnd.nextDouble() * 2 - 1));
+			// compute the randomized cost
+			double cost = type_cost_factor * distance * 
+					cost_dist_const * cost_rnd_var;
+			new_rows.get(i).setCost(cost);
+		}
+		
+		// compute random duration
+		
+		// generate a random duration variance
+		double dur_rnd_var = 1 - (duration_variance 
+				* (rnd.nextDouble() * 2 - 1));
+
+		// compute the line_no number of randomized durations
+		Duration[] durations = new Duration[line_no];
+		for (int i = 0; i < durations.length; i++) {
+			durations[i] = duration_dist_const
+				.multipliedBy((long)(type_duration_factor * distance
+						* dur_rnd_var));	
+		}
+		
+		// compute departure/arrive times
+		
+		if(line_changed || save_edge.getType().equals(enums.edge_type.walk)){
+				// new random departure times should be generated
+			for (int i = 0; i < line_no; i++) {
+				LocalTime departure = LocalTime.of(rnd.nextInt(24), rnd.nextInt(60));
+				LocalTime arrive = departure.plus(durations[i]);
+				new_rows.get(i).setStart_time(departure);
+				new_rows.get(i).setEnd_time(arrive);
+			}
+		}
+		else{	// departure times are a little after the end time
+				// of the last step
+			int i = 0;
+			for (timetable_row row : save_edge.getTimetable()) {
+				if(row.getLine() == line){
+					LocalTime departure = row.getEnd_time()
+							.plusMinutes(waiting_minutes);
+					LocalTime arrive = departure.plus(durations[i]);
+					new_rows.get(i).setStart_time(departure);
+					new_rows.get(i).setEnd_time(arrive);
+					i++;
+				}
+			}
+		}
+		
+		return new_rows;
 	}
 
 	/**
@@ -356,7 +598,10 @@ public class test_data_generation {
 				(maximum_node_consideration - minimum_node_consideration)) + minimum_node_consideration);
 		
 		if(minimum_node_consideration < nodes.size()){
-			for (int j = 0; j < Math.min(node_consideration_no, p.size()); j++) {
+			int loop = Math.min(node_consideration_no, p.size());
+			int z = 0;
+			int same_type_found_no = 0;
+			while(z < loop) {
 				double n_max = -1;
 				int id = -1;
 				for (int k = 0; k < buffer.size(); k++){
@@ -367,6 +612,16 @@ public class test_data_generation {
 				}
 				max_index[id] = 1;
 				buffer.set(id, -1.0);
+				z++;
+				if(id >= i) 
+					id ++;
+				// there should be at least one node of the same type
+				// in the candidates
+				if(node.getType().equals(nodes.get(id).getType()))
+					same_type_found_no ++;
+				
+				if(z == loop && same_type_found_no < min_edge)
+					loop ++;
 			}
 
 			// keep only first node_consideration_no number of nodes
@@ -384,14 +639,18 @@ public class test_data_generation {
 			if(! nodes.get(index).getType().equals(node.getType())){
 				p.set(j, 0.0); // set the probability to zero (nodes of the other types)
 			}
-			
 		}
 		
 		// Choose n items from p, n between a min & max
 		
 		// Choose a random value between min and max no. of edges
 		int n = (int)(rand.nextDouble() * (max_edge - min_edge) + min_edge);
+		int choice_counter = 0;
+		for (Double d : p)
+			if(d != 0)
+				choice_counter ++;
 		n = Math.min(n, p.size());
+		n = Math.min(n, choice_counter);
 		ArrayList<Integer> indexes = stochastic_choice(p, n);
 		
 		// Create edges
@@ -420,6 +679,11 @@ public class test_data_generation {
 				new_edge.setType(enums.edge_type.walk);
 				edges.add(new_edge);
 			}
+		}
+		
+		for (edge edge : edges) {
+			edge.getStart().getOutgoing_edges().add(edge);
+			edge.getEnd().getIncoming_edges().add(edge);
 		}
 		
 		return edges;
@@ -541,6 +805,8 @@ public class test_data_generation {
 		double sum = 0;
 		for (double d : p)
 			sum += d;
+		if(sum == 0)
+			throw new RuntimeException("all the weights are zero");
 		Random rn = new Random();
 		double rand = rn.nextDouble() * sum;
 		double flag = 0;

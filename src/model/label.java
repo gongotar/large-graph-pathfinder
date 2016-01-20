@@ -4,8 +4,8 @@
 package model;
 
 import java.util.ArrayList;
-
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 /**
  * @author Masoud Gholami
@@ -16,6 +16,7 @@ public class label {
 	private node node;
 	private ArrayList<connection<edge, Integer>> path;
 	private Duration		duration;
+	private LocalDateTime	start;
 	private int		change;
 	private double	risk;
 	private double	cost;
@@ -167,6 +168,20 @@ public class label {
 	public void setNode(node node) {
 		node.addLabel(this);
 		this.node = node;
+	}
+
+	/**
+	 * @return the start
+	 */
+	public LocalDateTime getStart() {
+		return start;
+	}
+
+	/**
+	 * @param start the start to set
+	 */
+	public void setStart(LocalDateTime start) {
+		this.start = start;
 	}
 	
 }

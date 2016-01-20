@@ -22,6 +22,13 @@ public class node {
 	private ArrayList<edge> incoming_edges;
 	private ArrayList<label> labels;
 	
+	/**
+	 * Default class constructor
+	 */
+	public node() {
+		outgoing_edges = new ArrayList<edge>();
+		incoming_edges = new ArrayList<edge>();
+	}
 	
 	/**
 	 * Prints the node properties as a string
