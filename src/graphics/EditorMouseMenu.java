@@ -185,7 +185,7 @@ public class EditorMouseMenu {
         JMenuBar menuBar = new JMenuBar();
         JMenu modeMenu = gm.getModeMenu();
         
-        JMenuItem item = new JMenuItem("Show Graph");
+        JMenuItem item = new JMenuItem("Compute Pareto Optimal");
         item.addActionListener(new ActionListener() {
 			
         	/**
@@ -194,7 +194,11 @@ public class EditorMouseMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				graph_viewer.show_graph(netw);
+				QueryDialog dialog = new QueryDialog(frame, netw);
+				dialog.setLocation(frame.getLocation().x + frame.getWidth() / 2
+						, frame.getLocation().y + frame.getHeight() / 2);
+	            dialog.setVisible(true);
+				// graph_viewer.show_graph(netw);
 			}
 		});
         modeMenu.add(item);

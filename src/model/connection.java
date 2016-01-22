@@ -25,6 +25,13 @@ public class connection <Edge, Connection_id>{
         this.setId(id);
     }
     
+    @Override
+    public String toString() {
+    	String text = "";
+    	text = "(" + ((edge)this.getEdge()).getId() + ", "
+    			+ this.getId() + ")";
+    	return text;
+    }
 	/**
 	 * @return the edge
 	 */

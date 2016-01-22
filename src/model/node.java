@@ -28,6 +28,7 @@ public class node {
 	public node() {
 		outgoing_edges = new ArrayList<edge>();
 		incoming_edges = new ArrayList<edge>();
+		labels = new ArrayList<label>();
 	}
 	
 	/**

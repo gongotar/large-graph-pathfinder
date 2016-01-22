@@ -31,8 +31,8 @@ public class EdgeTimeTableDialog  extends javax.swing.JDialog {
     /** Creates new form EdgeTimeTableDialog */
     public EdgeTimeTableDialog(java.awt.Frame parent, edge edge) {
         super(parent, true);
-        initComponents();
         this.edge = edge;
+        initComponents();
         setTitle("Edge: " + edge.toString());
     }
 
@@ -48,8 +48,6 @@ public class EdgeTimeTableDialog  extends javax.swing.JDialog {
             }
         });
         
-        //org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        //getContentPane().setLayout(layout);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         
@@ -86,19 +84,39 @@ public class EdgeTimeTableDialog  extends javax.swing.JDialog {
             	try{
             		switch (col) {
 					case 0:	// line
-						int line = Integer.valueOf((String) value);
+						int line;
+						if(value instanceof Integer)
+							line = (int) value;
+						else
+							line = Integer.valueOf((String)value);
 						break;
 					case 1: // Start Time
-						LocalTime stime = LocalTime.parse((String)value);
+						LocalTime stime;
+						if(value instanceof LocalTime)
+							stime = (LocalTime) value;
+						else
+							stime = LocalTime.parse((String)value);
 						break;
 					case 2: // End Time
-						LocalTime etime = LocalTime.parse((String)value);;
+						LocalTime etime;
+						if(value instanceof LocalTime)
+							etime = (LocalTime) value;
+						else
+							etime = LocalTime.parse((String)value);;
 						break;
 					case 3:	// cost
-						double cost = Double.valueOf((String) value);
+						double cost;
+						if(value instanceof Double)
+							cost = (double) value;
+						else
+							cost = Double.valueOf((String)value);
 						break;
 					case 4:	// risk
-						double risk = Double.valueOf((String) value);
+						double risk;
+						if(value instanceof Double)
+							risk = (double) value;
+						else
+							risk = Double.valueOf((String)value);
 						break;
 					default:
 						break;
@@ -118,6 +136,19 @@ public class EdgeTimeTableDialog  extends javax.swing.JDialog {
         };
         
 		table = new JTable(dataModel);
+		
+		if(edge.getTimetable().size() > 0){
+			for (int i = 0; i < edge.getTimetable().size(); i++) {
+				timetable_row row = edge.getTimetable().get(i);
+				int j = 0;
+				table.setValueAt(row.getLine(), i, j++);
+				table.setValueAt(row.getStart_time(), i, j++);
+				table.setValueAt(row.getEnd_time(), i, j++);
+				table.setValueAt(row.getCost(), i, j++);
+				table.setValueAt(row.getVariation(), i, j++);
+			}
+		}
+		
         add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
                 BorderLayout.CENTER);

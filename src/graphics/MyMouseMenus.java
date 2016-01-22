@@ -88,6 +88,7 @@ public class MyMouseMenus {
             this.add(new DeleteVertexMenuItem<node>());
             this.addSeparator();
             this.add(new NodePropItem(frame));
+            this.add(new NodeLabels(frame));
         }
     }
     
@@ -155,6 +156,38 @@ public class MyMouseMenus {
 		}
 		
 	}
-	
+
+    public static class NodeLabels extends JMenuItem implements VertexMenuListener<node>,
+    MenuPointListener {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		node v;
+		VisualizationViewer<node, edge> visComp;
+        Point2D point;
+
+        public void setPoint(Point2D point) {
+            this.point = point;
+        }
+        
+        public void setVertexAndView(node v, VisualizationViewer<node, edge> visComp) {
+            this.v = v;
+            this.setSelected(true);
+        }
+        
+        public NodeLabels(final JFrame frame) {            
+            super("Display Node Labels...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    NodeLabelsDialog dialog = new NodeLabelsDialog(frame, v);
+                    dialog.setLocation((int)point.getX()+ frame.getX(), (int)point.getY()+ frame.getY());
+                    dialog.setVisible(true);
+                }
+                
+            });
+        }
+    }
+
     
 }

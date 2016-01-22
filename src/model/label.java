@@ -33,6 +33,7 @@ public class label {
 		this.setChange(0);
 		this.setRisk(0);
 		this.setCost(0);
+		this.setPath( new ArrayList<connection<edge,Integer>>());
 	}
 	
 	/**
@@ -43,10 +44,7 @@ public class label {
 	 * @see label
 	 */
 	public label(node node){
-		this.setDuration(Duration.ZERO);
-		this.setChange(0);
-		this.setRisk(0);
-		this.setCost(0);
+		this();
 		this.setNode(node);
 	}
 	
