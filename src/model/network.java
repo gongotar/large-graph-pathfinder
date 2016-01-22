@@ -21,7 +21,8 @@ public class network {
 	 * @see network
 	 */
 	public network(){
-		
+		nodes = new ArrayList<node>();
+		edges = new ArrayList<edge>();
 	}
 	
 	/**

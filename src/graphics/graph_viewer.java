@@ -47,8 +47,8 @@ public class graph_viewer{
 	public static void main(String[] args){
 		// network netw = test_data_generation.generate_netw(7);
 		// show_graph(netw);
-		network netw = create_graph_visually();
-		//show_graph(netw);
+		// network netw = create_graph_visually();
+		// show_graph(netw);
 	}
 	
 	/**
@@ -58,6 +58,7 @@ public class graph_viewer{
 	 * @return the created graph
 	 * @see	graph_viewer
 	 */
+	@SuppressWarnings("unused")
 	private static network create_graph_visually() {
     	editing_graph eg =
         		new editing_graph();
@@ -86,7 +87,7 @@ public class graph_viewer{
 	 * @param netw	the given network
 	 * @see	graph_viewer
 	 */
-	private static void show_graph(network netw) {
+	public static void show_graph(network netw) {
 		setNetw(netw);
 		DirectedGraph<node, edge> g = fill_graph();
 		VisualizationViewer<node,edge> bvs = 

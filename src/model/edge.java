@@ -18,7 +18,7 @@ public class edge {
 	private node start, end;
 	private ArrayList<timetable_row> timetable;
 	private edge_type type;
-	private boolean feasible;
+	private boolean feasible = true;
 
 	/**
 	 * Default class constructor
@@ -37,12 +37,14 @@ public class edge {
 	public String toString(){
 		String text = "";
 		text += this.getType().toString();
-		text += ", ";
-		text += this.getStart().getId();
-		text += ":";
-		text += this.getEnd().getId();
-		text += ", ";
-		text += this.getTimetable();
+		//text += this.getStart().getId();
+		//text += ":";
+		//text += this.getEnd().getId();
+		//text += ", ";
+		if(!this.isFeasible())
+			text += " (unfeasible)";
+		else
+			text += ", " + this.getTimetable();
 		return text;
 	}
 	
