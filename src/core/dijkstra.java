@@ -46,6 +46,7 @@ public class dijkstra {
 		
 		for (node n : startnodes) {
 			label l = new label(n);
+			l.setStart(starttime);
 			pq.add(l);
 		}
 		
@@ -291,8 +292,13 @@ public class dijkstra {
 		if(e.getType().equals(edge_type.walk))					// if walking edge then return 0
 			return 0;
 		int size = l.getPath().size();
-		timetable_row last_row = get_label_row(l, size - 1);	// get the last row of the path in the label
-		LocalTime arrived_at = last_row.getEnd_time();		// get the arriving time of the path
+		LocalTime arrived_at;
+		if(size != 0){
+			timetable_row last_row = get_label_row(l, size - 1);	// get the last row of the path in the label
+			arrived_at = last_row.getEnd_time();		// get the arriving time of the path
+		}else
+			arrived_at = l.getStart().toLocalTime();
+			
 		ArrayList<timetable_row> timetable = 					// get the timetable of the new edge
 				new ArrayList<timetable_row>(e.getTimetable());
 		
