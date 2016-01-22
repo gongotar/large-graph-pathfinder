@@ -39,7 +39,6 @@ public class MyMouseMenus {
             this.add(new DeleteEdgeMenuItem<edge>());
             this.addSeparator();
             this.add(new EdgePropItem(frame));  
-            this.addSeparator();
             this.add(new EdgeTimeTable(frame));
         }
         

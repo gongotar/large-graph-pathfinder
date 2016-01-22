@@ -41,11 +41,11 @@ import model.node;
  * Illustrates the use of custom edge and vertex classes in a graph editing application.
  * Demonstrates a new graph mouse plugin for bringing up popup menus for vertices and
  * edges.
- * @author Dr. Greg M. Bernstein
+ * @author Masoud Gholami
  */
 public class EditorMouseMenu {
     
-	private static Dimension size = new Dimension(800, 600);
+	private static Dimension size = new Dimension(800, 500);
 	
     /**
      * @param args the command line arguments
@@ -60,8 +60,6 @@ public class EditorMouseMenu {
         GraphFactory.setNetw(netw);
         DirectedGraph<node, edge> g =
         		new DirectedSparseGraph<node, edge>();
-        //SparseMultigraph<node, edge> g = 
-          //      new SparseMultigraph<node, edge>();
         Layout<node, edge> layout = new StaticLayout<node, edge>(g);
         layout.setSize(size);
         VisualizationViewer<node, edge> vv = 
