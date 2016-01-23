@@ -24,7 +24,6 @@ import model.timetable_row;
 public class dijkstra {
 
 	public static void main(String args[]){
-	
 		
 	}
 	
@@ -205,6 +204,8 @@ public class dijkstra {
 		if(edge_type.equals(enums.edge_type.walk))			// if walking edge then no change increment
 			return change;
 		int size = l.getPath().size();
+		if(size == 0)
+			return 0;
 		timetable_row last_row = get_label_row(l, size - 1);// get the last row
 		
 		if(last_row.getLine() != row.getLine())				// get the last line used in the l and check
@@ -256,7 +257,7 @@ public class dijkstra {
 																		// the edge duration to the label duration
 			duration = Duration.between(row.getStart_time(), row.getEnd_time()).plus(l.getDuration());
 		else
-			duration = Duration.between(l.getStart(), row.getEnd_time());
+			duration = Duration.between(l.getStart().toLocalTime(), row.getEnd_time());
 		return duration;
 	}
 

@@ -49,10 +49,10 @@ public class NodeLabelsDialog extends javax.swing.JDialog {
         for (int i = 0; i < data.length; i++) {
 			data[i][0] = node.getLabels().get(i).getPath();
 			data[i][1] = node.getLabels().get(i).getDuration();
-			data[i][3] = node.getLabels().get(i).getStart();
-			data[i][4] = node.getLabels().get(i).getChange();
-			data[i][5] = node.getLabels().get(i).getCost();
-			data[i][6] = node.getLabels().get(i).getRisk();
+			data[i][2] = node.getLabels().get(i).getStart();
+			data[i][3] = node.getLabels().get(i).getChange();
+			data[i][4] = node.getLabels().get(i).getCost();
+			data[i][5] = node.getLabels().get(i).getRisk();
 		}
         
         String[] headers = {"Path", "Duration", "Start Time", "Change", "Cost", "Risk"};
