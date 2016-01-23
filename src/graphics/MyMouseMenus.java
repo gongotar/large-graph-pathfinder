@@ -10,13 +10,17 @@
 package graphics;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
 import model.edge;
+import model.network;
 import model.node;
 
 /**
@@ -82,13 +86,16 @@ public class MyMouseMenus {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
+		network netw;
 
-		public VertexMenu(final JFrame frame) {
+		public VertexMenu(final JFrame frame, network netw) {
             super("Vertex Menu");
+            this.netw = netw; 
             this.add(new DeleteVertexMenuItem<node>());
             this.addSeparator();
             this.add(new NodePropItem(frame));
             this.add(new NodeLabels(frame));
+            this.add(new ParetoOptimals(frame, netw));
         }
     }
     
@@ -189,5 +196,36 @@ public class MyMouseMenus {
         }
     }
 
-    
+    public static class ParetoOptimals extends JMenuItem implements VertexMenuListener<node>,
+    MenuPointListener {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		node v;
+		VisualizationViewer<node, edge> visComp;
+        Point2D point;
+
+        public void setPoint(Point2D point) {
+            this.point = point;
+        }
+        
+        public void setVertexAndView(node v, VisualizationViewer<node, edge> visComp) {
+            this.v = v;
+            this.setSelected(true);
+        }
+        
+        public ParetoOptimals(final JFrame frame, final network netw) {            
+            super("Pareto Optimals...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    NodeParetoDialog dialog = new NodeParetoDialog(frame, v, netw);
+                    dialog.setLocation((int)point.getX()+ frame.getX(), (int)point.getY()+ frame.getY());
+                    dialog.setVisible(true);
+                }
+                
+            });
+        }
+    }
+
 }

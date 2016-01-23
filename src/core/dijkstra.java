@@ -3,7 +3,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import enums.edge_type;
 import model.connection;
@@ -41,7 +42,7 @@ public class dijkstra {
 	public static void pareto_opt(ArrayList<node> startnodes,
 			LocalDateTime starttime){
 		
-		PriorityQueue<label> pq = new PriorityQueue<label>();
+		Queue<label> pq = new LinkedList<label>();
 		
 		for (node n : startnodes) {
 			label l = new label(n);
@@ -113,8 +114,12 @@ public class dijkstra {
 		// for now a basic dominance evaluation methodology is implemented
 		// simply checking if all label attributes are less than or equal to
 		// new label attributes
-		
-		if(label.getCost() <= new_label.getCost()
+		if(label.getCost() == new_label.getCost()
+				&& label.getDuration().compareTo(new_label.getDuration()) == 0
+				&& label.getChange() == new_label.getChange()
+				&& label.getRisk() == new_label.getRisk())
+			return false;
+		else if(label.getCost() <= new_label.getCost()
 				&& label.getDuration().compareTo(new_label.getDuration()) <= 0
 				&& label.getChange() <= new_label.getChange()
 				&& label.getRisk() <= new_label.getRisk())

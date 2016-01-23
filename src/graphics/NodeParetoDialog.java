@@ -1,15 +1,11 @@
 /**
  * 
- * 
  */
-
 package graphics;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
-import javax.swing.JLabel;
 
 import core.dijkstra;
 import model.network;
@@ -19,37 +15,34 @@ import model.node;
  * @author Masoud Gholami
  *
  */
-
-public class QueryDialog extends javax.swing.JDialog {
+public class NodeParetoDialog extends javax.swing.JDialog {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	network netw;
-	ArrayList<node> startNodes;
-	LocalDateTime startTime;
+	node node;
 	DateTimeFormatter formatter;
+	network netw;
     
     /** Creates new form EdgeTimeTableDialog */
-    public QueryDialog(java.awt.Frame parent, network netw) {
+    public NodeParetoDialog(java.awt.Frame parent, node node, network netw) {
         super(parent, true);
+        this.node = node;
         this.netw = netw;
         initComponents();
+        setTitle("Node: " + node.toString());
         formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-        StartNodesTextField.setValue(LocalDateTime.now().format(formatter));
-        setTitle("Query");
+        TimeTextField.setValue(LocalDateTime.now().format(formatter));
     }
 
     private void initComponents() {
     	jButton1 = new javax.swing.JButton();
-    	StartNodesTextField = new javax.swing.JFormattedTextField();
-    	jLabelStartNodes = new JLabel();
-    	StartTimeTextField = new javax.swing.JFormattedTextField();
-    	jLabelStartTime = new JLabel();
+        jLabelTime = new javax.swing.JLabel();
+        TimeTextField = new javax.swing.JFormattedTextField();
     	
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Query");
+        setTitle("Node Pareeto Optimals");
         jButton1.setText("OK");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -57,9 +50,9 @@ public class QueryDialog extends javax.swing.JDialog {
             }
         });
         
-        jLabelStartNodes.setText("Start Nodes (Id): ");
-        jLabelStartTime.setText("Start Time: ");
-        
+        jLabelTime.setText("Start Time: ");
+
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -70,13 +63,11 @@ public class QueryDialog extends javax.swing.JDialog {
                     .add(jButton1)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabelStartNodes)
-                            .add(jLabelStartTime))
+                            .add(jLabelTime))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(StartNodesTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(StartTimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                .add(TimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -84,46 +75,36 @@ public class QueryDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelStartNodes)
-                    .add(StartNodesTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelStartTime)
-                    .add(StartTimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabelTime)
+                    .add(TimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1))
         );
-
         pack();
+
     }
     
     private void okButtonHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonHandler
-    	String sTime = this.StartTimeTextField.getText();
-    	String sNodes = this.StartNodesTextField.getText();
-    	startNodes = new ArrayList<node>();
+    	String sTime = this.TimeTextField.getText();
+    	ArrayList<node> startNodes = new ArrayList<node>();
+    	LocalDateTime startTime = null;
+    	startNodes.add(node);
     	try{
     		startTime = LocalDateTime.parse(sTime, formatter);
     	}catch(Exception e){
     		dispose();
     	}
-    	String[] nodes = sNodes.split(",");
-    	int i = 0;
-    	for (node node : netw.getNodes()) {
-			if(i < nodes.length &&
-				node.getId() == Integer.valueOf(nodes[i].trim())){
-				startNodes.add(node);
-				i++;
-			}
+    	
+    	for (node node : netw.getNodes())
 			node.getLabels().clear();
-		}
     	
     	dijkstra.pareto_opt(startNodes, startTime);
         dispose();
     }//GEN-LAST:event_okButtonHandler
     
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JFormattedTextField TimeTextField;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabelStartNodes;
-    private javax.swing.JFormattedTextField StartNodesTextField;
-    private javax.swing.JLabel jLabelStartTime;
-    private javax.swing.JFormattedTextField StartTimeTextField;
+    private javax.swing.JLabel jLabelTime;
+    // End of variables declaration//GEN-END:variables
 }

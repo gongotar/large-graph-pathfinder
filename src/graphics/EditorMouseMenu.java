@@ -166,7 +166,7 @@ public class EditorMouseMenu {
         PopupVertexEdgeMenuMousePlugin<node, edge> myPlugin = new PopupVertexEdgeMenuMousePlugin<node, edge>();
         // Add some popup menus for the edges and vertices to our mouse plugin.
         JPopupMenu edgeMenu = new MyMouseMenus.EdgeMenu(frame);
-        JPopupMenu vertexMenu = new MyMouseMenus.VertexMenu(frame);
+        JPopupMenu vertexMenu = new MyMouseMenus.VertexMenu(frame, netw);
         myPlugin.setEdgePopup(edgeMenu);
         myPlugin.setVertexPopup(vertexMenu);
         gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
