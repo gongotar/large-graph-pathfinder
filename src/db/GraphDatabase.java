@@ -5,9 +5,12 @@ package db;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Map;
 
+import model.coordinate;
 import model.edge;
 import model.node;
+import model.timetable_row;
 
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -15,11 +18,14 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
+import test_data.city;
 import enums.DbEdgePropertiesEnum;
 import enums.DbNodePropertiesEnum;
+import enums.edge_type;
 import enums.node_type;
 
 
@@ -33,6 +39,7 @@ public class GraphDatabase {
 	
 	/**
 	 * Default class constructor
+	 * 
 	 * @see GraphDatabase
 	 */
 	public GraphDatabase() {
@@ -41,6 +48,7 @@ public class GraphDatabase {
 	
 	/**
 	 * Class constructor setting the database path
+	 * 
 	 * @param path	the database path
 	 * @see GraphDatabase
 	 */
@@ -52,6 +60,7 @@ public class GraphDatabase {
 	
 	/**
 	 * Initiates the GraphDatabase
+	 * 
 	 * @see GraphDatabase
 	 */
 	public void init(){
@@ -62,22 +71,153 @@ public class GraphDatabase {
 	
 	/**
 	 * Shuts down the database
+	 * 
 	 * @see GraphDatabase
 	 */
 	public void Shutdown(){
 		this.getGraphDb().shutdown();
 	}
+
+	/**
+	 * Returns all of the edges in the database
+	 * 
+	 * @return	database edges
+	 * @see GraphDatabase
+	 */
+	@SuppressWarnings("unchecked")
+	public ArrayList<edge> getAllEdges(){
+		ArrayList<edge> edges = new ArrayList<edge>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("MATCH ()-[r]->() RETURN r;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Relationship rel = (Relationship) row.get("r");
+				edge edge = new edge();
+				edge.setId((int) rel.getProperty(DbEdgePropertiesEnum
+						.id.toString()));
+				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
+						.feasible.toString()));
+				edge.setTimetable((ArrayList<timetable_row>) rel
+						.getProperty(DbEdgePropertiesEnum.timetable.toString()));
+				
+				RelationshipType type = rel.getType();
+				edge.setType(edge_type.valueOf(type.name()));
+				
+				edges.add(edge);
+		    }
+			tx.success();
+		}
+		return edges;
+	}
+	
+	/**
+	 * Returns all of the nodes in the database
+	 * 
+	 * @return	database nodes
+	 * @see GraphDatabase
+	 */
+	public ArrayList<node> getAllNodes(){
+		ArrayList<node> nodes = new ArrayList<node>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("MATCH (n) RETURN n;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Node n = (Node) row.get("n");
+				node node = new node();
+				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));
+				node.setCity((city) n.getProperty(DbNodePropertiesEnum.city.toString()));
+				node.setCoordinate((coordinate) n.getProperty(DbNodePropertiesEnum.coordinate.toString()));
+				
+				Iterable<Label> l = n.getLabels();
+				for (Label label : l)
+					node.setType(node_type.valueOf(label.name()));
+				
+				nodes.add(node);
+		    }
+			tx.success();
+		}
+		return nodes;
+	}
+
+	/**
+	 * Returns all of the edges in the database of the
+	 * given type
+	 * 
+	 * @param	type	the type of the edge
+	 * @return	database edges
+	 * @see GraphDatabase
+	 */
+	@SuppressWarnings("unchecked")
+	public ArrayList<edge> getEdgesofType(edge_type type){
+		ArrayList<edge> edges = new ArrayList<edge>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("MATCH ()-[r:" + type.toString() 
+							+ "]->() RETURN r;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Relationship rel = (Relationship) row.get("r");
+				edge edge = new edge();
+				edge.setId((int) rel.getProperty(DbEdgePropertiesEnum
+						.id.toString()));
+				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
+						.feasible.toString()));
+				edge.setTimetable((ArrayList<timetable_row>) rel
+						.getProperty(DbEdgePropertiesEnum.timetable.toString()));
+				
+				edge.setType(type);
+				
+				edges.add(edge);
+		    }
+			tx.success();
+		}
+		return edges;
+	}
+	
+	/**
+	 * Returns all of the nodes in the database of the
+	 * given type
+	 * 
+	 * @param type	the node type
+	 * @return	database nodes
+	 * @see GraphDatabase
+	 */
+	public ArrayList<node> getAllNodes(node_type type){
+		ArrayList<node> nodes = new ArrayList<node>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("MATCH (n:" + type.toString() 
+							+ ") RETURN n;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Node n = (Node) row.get("n");
+				node node = new node();
+				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));
+				node.setCity((city) n.getProperty(DbNodePropertiesEnum.city.toString()));
+				node.setCoordinate((coordinate) n.getProperty(DbNodePropertiesEnum.coordinate.toString()));
+				
+				node.setType(type);
+				
+				nodes.add(node);
+		    }
+			tx.success();
+		}
+		return nodes;
+	}
+
 	
 	/**
 	 * Adds a new node to the database
+	 * 
 	 * @param node the node to be added
 	 * @see GraphDatabase
 	 */
 	public void addNode(final node node){
 		Node n;
 		
-		try (Transaction tx = graphDb.beginTx())
-		{
+		try (Transaction tx = this.getGraphDb().beginTx()){
 			
 			n = this.getGraphDb().createNode();
 			
@@ -103,13 +243,13 @@ public class GraphDatabase {
 	
 	/**
 	 * Adds all nodes in the array to the database
+	 * 
 	 * @param nodes		the array of nodes to be added
 	 * @see GraphDatabase
 	 */
 	public void addAllNodes(ArrayList<node> nodes){
 		
-		try (Transaction tx = this.getGraphDb().beginTx())
-		{
+		try (Transaction tx = this.getGraphDb().beginTx()){
 			for (final node node : nodes) {
 				Node n;
 				n = this.getGraphDb().createNode();
@@ -137,13 +277,13 @@ public class GraphDatabase {
 	
 	/**
 	 * Adds a new edge to the database
+	 * 
 	 * @param edge the edge to be added
 	 * @see GraphDatabase
 	 */
 	public void addEdge(final edge edge){
 		Relationship relationship;
-		try (Transaction tx = this.getGraphDb().beginTx())
-		{
+		try (Transaction tx = this.getGraphDb().beginTx()){
 			node startNode =edge.getStart();
 			Node n1 = getGraphDbNode(startNode.getType()
 					, startNode.getId());
@@ -174,13 +314,13 @@ public class GraphDatabase {
 	
 	/**
 	 * Adds all edges in the array to the database
+	 * 
 	 * @param edges		the array of edges to be added
 	 * @see GraphDatabase
 	 */
 	public void addAllEdges(ArrayList<edge> edges){
 
-		try (Transaction tx = this.getGraphDb().beginTx())
-		{
+		try (Transaction tx = this.getGraphDb().beginTx()){
 			for (final edge edge : edges) {
 				Relationship relationship;
 				node startNode =edge.getStart();
@@ -215,7 +355,8 @@ public class GraphDatabase {
 	
 	/**
 	 * Finds a node in the graph database and return
-	 * the node of the type org.neo4j.graphdb.Node;
+	 * the node of the type org.neo4j.graphdb.Node
+	 * 
 	 * @param type	the type of the node
 	 * @param id	the id of the node
 	 * @return	the found node in the database
@@ -270,6 +411,7 @@ public class GraphDatabase {
 	
 	/**
 	 * Registers a shutdown hook for the Graphdb instance
+	 * 
 	 * @param graphDb	graphDb instance
 	 * @see GraphDatabase
 	 */
@@ -278,11 +420,9 @@ public class GraphDatabase {
 	    // Registers a shutdown hook for the Neo4j instance so that it
 	    // shuts down nicely when the VM exits (even if you "Ctrl-C" the
 	    // running application).
-	    Runtime.getRuntime().addShutdownHook( new Thread()
-	    {
+	    Runtime.getRuntime().addShutdownHook( new Thread(){
 	        @Override
-	        public void run()
-	        {
+	        public void run(){
 	            graphDb.shutdown();
 	        }
 	    });

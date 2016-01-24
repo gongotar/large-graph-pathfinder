@@ -58,7 +58,10 @@ public class network {
 	 * @see		network
 	 */
 	public void get_from_db(String url){
-		// TODO method implementation
+		GraphDatabase db = new GraphDatabase(url);
+		this.setNodes(db.getAllNodes());
+		this.setEdges(db.getAllEdges());
+		db.Shutdown();
 	}
 	
 	/**
