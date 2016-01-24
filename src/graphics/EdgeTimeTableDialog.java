@@ -160,23 +160,66 @@ public class EdgeTimeTableDialog  extends javax.swing.JDialog {
     	ArrayList<timetable_row> timetable = new ArrayList<timetable_row>();
     	int rows = table.getRowCount();
     	Object value;
+    	int line, j;
+    	LocalTime stime, etime;
+    	double cost, risk;
     	for (int i = 0; i < rows; i++) {
-    		if(table.getValueAt(i, 0) == null || 
-    				((String)table.getValueAt(i, 0)) == "")
-    			break;
-    		value = table.getValueAt(i, 0);
-    		int line = Integer.valueOf((String) value);
-    		value = table.getValueAt(i, 1);
-    		LocalTime stime = LocalTime.parse((String)value);
-    		value = table.getValueAt(i, 2);
-    		LocalTime etime = LocalTime.parse((String)value);
-    		value = table.getValueAt(i, 3);
-    		double cost = Double.valueOf((String) value);
-    		value = table.getValueAt(i, 4);
-    		double risk = Double.valueOf((String) value);
     		
-    		timetable_row row = new timetable_row(i, line, cost, stime, etime, risk);
-    		timetable.add(row);
+    		j = 0;
+    		
+    		value = table.getValueAt(i, j++);
+    		if(value == null)
+    			break;
+    		else if(value instanceof Integer)
+    			line = (int) value;
+    		else if((String) value != "")
+    			line = Integer.valueOf((String) value);
+    		else
+    			break;
+    		
+    		value = table.getValueAt(i, j++);
+    		if(value == null)
+    			break;
+    		else if(value instanceof LocalTime)
+    			stime = (LocalTime) value;
+    		else if((String) value != "")
+    			stime = LocalTime.parse((String)value);
+    		else
+    			break;
+    		
+    		value = table.getValueAt(i, j++);
+    		if(value == null)
+    			break;
+    		else if(value instanceof LocalTime)
+    			etime = (LocalTime) value;
+    		else if((String) value != "")
+    			etime = LocalTime.parse((String)value);
+    		else
+    			break;
+    			
+    		value = table.getValueAt(i, j++);
+    		if(value == null)
+    			break;
+    		else if(value instanceof Double)
+    			cost = (double) value;
+    		else if((String) value != "")
+    			cost = Double.valueOf((String) value);
+    		else
+    			break;
+    		
+    		value = table.getValueAt(i, j++);
+    		if(value == null)
+    			break;
+    		else if(value instanceof Double)
+    			risk = (double) value;
+    		else if((String) value != "")
+    			risk = Double.valueOf((String) value);
+    		else
+    			break;
+    		
+	    	timetable_row row = new timetable_row(i, line, cost, stime, etime, risk);
+	   		timetable.add(row);    			
+	   		
 		}
     	edge.setTimetable(timetable);
         dispose();
