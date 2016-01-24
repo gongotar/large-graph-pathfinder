@@ -6,6 +6,8 @@ package model;
 
 import java.util.ArrayList;
 
+import db.GraphDatabase;
+
 /**
  * @author Masoud Gholami
  *
@@ -66,7 +68,10 @@ public class network {
 	 * @see		network
 	 */
 	public void store_to_db(String url){
-		// TODO method implementation
+		GraphDatabase db = new GraphDatabase(url);
+		db.addAllNodes(this.getNodes());
+		db.addAllEdges(this.getEdges());
+		db.Shutdown();
 	}
 	
 	/**
