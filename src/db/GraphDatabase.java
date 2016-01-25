@@ -10,6 +10,7 @@ import java.util.Map;
 import model.coordinate;
 import model.edge;
 import model.node;
+import model.timetable_row;
 
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -111,8 +112,6 @@ public class GraphDatabase {
 						.id.toString()));
 				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
 						.feasible.toString()));
-				//edge.setTimetable((ArrayList<timetable_row>) rel
-					//	.getProperty(DbEdgePropertiesEnum.timetable.toString()));
 				int id_n1 = (int) rel.getStartNode()
 						.getProperty(DbNodePropertiesEnum.id.toString());
 				int id_n2 = (int) rel.getEndNode()
@@ -131,6 +130,12 @@ public class GraphDatabase {
 				
 				RelationshipType type = rel.getType();
 				edge.setType(edge_type.valueOf(type.name()));
+				
+				String[] timetable = (String[]) rel.getProperty
+						(DbEdgePropertiesEnum.timetable.toString());
+				
+				for (String t_row : timetable)
+					edge.getTimetable().add(timetable_row.Parse(t_row));
 				
 				edges.add(edge);
 		    }
@@ -193,9 +198,6 @@ public class GraphDatabase {
 						.id.toString()));
 				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
 						.feasible.toString()));
-				//edge.setTimetable((ArrayList<timetable_row>) rel
-					//	.getProperty(DbEdgePropertiesEnum.timetable.toString()));
-				
 				edge.setType(type);
 
 				int id_n1 = (int) rel.getStartNode()
@@ -213,6 +215,12 @@ public class GraphDatabase {
 						node.getIncoming_edges().add(edge);
 					}
 				}
+				
+				String[] timetable = (String[]) rel.getProperty
+						(DbEdgePropertiesEnum.timetable.toString());
+				
+				for (String t_row : timetable)
+					edge.getTimetable().add(timetable_row.Parse(t_row));
 				
 				edges.add(edge);
 		    }
@@ -347,9 +355,15 @@ public class GraphDatabase {
 					.toString(), edge.getId());
 			relationship.setProperty(DbEdgePropertiesEnum.feasible
 					.toString(), edge.isFeasible());
-			//relationship.setProperty(DbEdgePropertiesEnum.timetable
-				//	.toString(), edge.getTimetable());
 			
+			String[] timetable = new String[edge.getTimetable().size()];
+			
+			for (int i = 0; i < timetable.length; i++)
+				timetable[i] = edge.getTimetable().get(i).FullString();
+			
+			relationship.setProperty(DbEdgePropertiesEnum.timetable.toString()
+					, timetable);
+
 			tx.success();
 		}
 	}
@@ -386,9 +400,14 @@ public class GraphDatabase {
 						.toString(), edge.getId());
 				relationship.setProperty(DbEdgePropertiesEnum.feasible
 						.toString(), edge.isFeasible());
-				//relationship.setProperty(DbEdgePropertiesEnum.timetable
-					//	.toString(), edge.getTimetable());
 				
+				String[] timetable = new String[edge.getTimetable().size()];
+				
+				for (int i = 0; i < timetable.length; i++)
+					timetable[i] = edge.getTimetable().get(i).FullString();
+				
+				relationship.setProperty(DbEdgePropertiesEnum.timetable.toString()
+						, timetable);
 			}
 			
 			tx.success();

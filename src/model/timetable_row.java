@@ -41,7 +41,30 @@ public class timetable_row{
 	}
 	
 	/**
-	 * Prints the row properties as a string
+	 * Prints all of the row properties as a string
+	 * 
+	 * @return	row properties
+	 * @see	timetable_row
+	 */
+	public String FullString(){
+		String text = "";
+		text += this.getId();
+		text += ";";
+		text += this.getLine();
+		text += ";";
+		text += this.getStart_time();
+		text += ";";
+		text += this.getEnd_time();
+		text += ";";
+		text += this.getCost();
+		text += ";";
+		text += this.getVariation();
+		return text;
+	}
+	
+	/**
+	 * Prints the selected row properties as a string
+	 * for the visualization proposes
 	 * 
 	 * @return	row properties
 	 * @see	timetable_row
@@ -50,11 +73,32 @@ public class timetable_row{
 	public String toString(){
 		String text = "";
 		text += this.getStart_time();
-		text += " - ";
+		text += ":";
 		text += this.getEnd_time();
 		text += "/";
 		text += this.getLine();
+		text += "@";
+		text += this.getCost();
 		return text;
+	}
+	
+	/**
+	 * Parses a string into a timetable row
+	 * 
+	 * @param arg	the string to be parsed
+	 * @return	a new instance of a timetable row
+	 * @see timetable_row
+	 */
+	public static timetable_row Parse(String arg){
+		timetable_row row = new timetable_row();
+		String info[] = arg.split(";");
+		row.setId(Integer.parseInt(info[0].trim()));
+		row.setLine(Integer.parseInt(info[1].trim()));
+		row.setStart_time(LocalTime.parse(info[2].trim()));
+		row.setEnd_time(LocalTime.parse(info[3].trim()));
+		row.setCost(Double.parseDouble(info[4].trim()));
+		row.setVariation(Double.parseDouble(info[5].trim()));
+		return row;
 	}
 	
 	/**
