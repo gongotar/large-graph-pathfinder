@@ -60,7 +60,7 @@ public class network {
 	public void get_from_db(String url){
 		GraphDatabase db = new GraphDatabase(url);
 		this.setNodes(db.getAllNodes());
-		this.setEdges(db.getAllEdges());
+		this.setEdges(db.getAllEdges(this.getNodes()));
 		db.Shutdown();
 	}
 	
@@ -72,6 +72,7 @@ public class network {
 	 */
 	public void store_to_db(String url){
 		GraphDatabase db = new GraphDatabase(url);
+		db.clearDatabase();
 		db.addAllNodes(this.getNodes());
 		db.addAllEdges(this.getEdges());
 		db.Shutdown();

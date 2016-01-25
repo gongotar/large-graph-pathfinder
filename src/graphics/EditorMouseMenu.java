@@ -31,6 +31,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.apache.commons.collections15.Transformer;
+
 import model.CoordinateManager;
 import model.coordinate;
 import model.edge;
@@ -58,12 +60,29 @@ public class EditorMouseMenu {
     private static void create_graph_visually(final network netw){
         final JFrame frame = new JFrame("Editing and Mouse Menu Demo");
         GraphFactory.setNetw(netw);
-        DirectedGraph<node, edge> g =
+        final DirectedGraph<node, edge> g =
         		new DirectedSparseGraph<node, edge>();
         Layout<node, edge> layout = new StaticLayout<node, edge>(g);
         layout.setSize(size);
-        VisualizationViewer<node, edge> vv = 
+        final VisualizationViewer<node, edge> vv = 
                 new VisualizationViewer<node, edge>(layout);
+                
+        Transformer<node, Point2D> node_location = 
+				new Transformer<node, Point2D>() {
+
+					@Override
+					public Point2D transform(node arg0) {
+						int x = graph_viewer.getCoordinate_x(arg0.getCoordinate());
+						int y = graph_viewer.getCoordinate_y(arg0.getCoordinate());
+						Point2D.Double point = new Point2D.Double();
+						point.setLocation(x, y);
+						return point;
+					}
+				};
+				
+		// Set the transformer of node location to the layout
+		layout.setInitializer(node_location);
+                
         vv.setPreferredSize(size);
         // Show vertex and edge labels
         vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<node>());
@@ -134,6 +153,13 @@ public class EditorMouseMenu {
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
+				
+				for (node node : netw.getNodes())
+					g.addVertex(node);
+				
+				for (edge edge : netw.getEdges())
+					g.addEdge(edge, edge.getStart(), edge.getEnd());
+				
 				frame.repaint();
 				super.mouseEntered(e);
 			}
@@ -185,23 +211,51 @@ public class EditorMouseMenu {
         JMenuBar menuBar = new JMenuBar();
         JMenu modeMenu = gm.getModeMenu();
         
-        JMenuItem item = new JMenuItem("Compute Pareto Optimal");
-        item.addActionListener(new ActionListener() {
+        JMenuItem item1 = new JMenuItem("Compute Pareto Optimal");
+        item1.addActionListener(new ActionListener() {
 			
-        	/**
-        	 * Get the results of the visualization
-        	 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 				QueryDialog dialog = new QueryDialog(frame, netw);
 				dialog.setLocation(frame.getLocation().x + frame.getWidth() / 2
 						, frame.getLocation().y + frame.getHeight() / 2);
 	            dialog.setVisible(true);
-				// graph_viewer.show_graph(netw);
 			}
 		});
-        modeMenu.add(item);
+        
+        JMenuItem item2 = new JMenuItem("Store to Database");
+        item2.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				DbDialog dialog = new DbDialog(frame, netw, false);
+				dialog.setLocation(frame.getLocation().x + frame.getWidth() / 2
+						, frame.getLocation().y + frame.getHeight() / 2);
+	            dialog.setVisible(true);
+			}
+		});
+        
+        JMenuItem item3 = new JMenuItem("Load from Database");
+        item3.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for (node node : netw.getNodes())
+					vv.getGraphLayout().getGraph().removeVertex(node);
+				
+				for (edge edge : netw.getEdges())
+					vv.getGraphLayout().getGraph().removeEdge(edge);
+				
+				DbDialog dialog = new DbDialog(frame, netw, true);
+				dialog.setLocation(frame.getLocation().x + frame.getWidth() / 2
+						, frame.getLocation().y + frame.getHeight() / 2);
+	            dialog.setVisible(true);
+			}
+		});
+        
+        modeMenu.add(item1);
+        modeMenu.add(item2);
+        modeMenu.add(item3);
         
         modeMenu.setText("Mouse Mode");
         modeMenu.setIcon(null); // I'm using this in a main menu

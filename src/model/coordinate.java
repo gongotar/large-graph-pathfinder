@@ -101,6 +101,19 @@ public class coordinate implements Comparable<coordinate>{
     return format.format(latitude) + ", " + format.format(longitude);
   }
   
+  /**
+   * Parses a valid coordination string
+   * @param str	coordination string
+   * @see	coordinate
+   * @author Masoud Gholami
+   */
+  public static coordinate Parse(String str){
+	  String[] parts = str.split(",");
+	  float latitude = Float.parseFloat(parts[0].trim());
+	  float longitude = Float.parseFloat(parts[1].trim());
+	  return new coordinate(latitude, longitude);
+  }
+  
   /*
    * methods required for ordering in collections
    * http://java.sun.com/docs/books/tutorial/collections/interfaces/order.html

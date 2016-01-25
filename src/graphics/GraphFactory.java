@@ -52,6 +52,12 @@ public class GraphFactory {
         
         public node create() {
             node v = new node();
+            int maxId = -1;
+            for (node node : GraphFactory.getNetw().getNodes())
+				if(node.getId() > maxId)
+					maxId = node.getId();
+			
+            nodeId = Math.max(nodeId, maxId + 1);
             v.setCity(defaultCity);
             v.setId(nodeId ++);
             v.setType(getDefaultType());
@@ -105,6 +111,12 @@ public class GraphFactory {
         
         public edge create() {
             edge e = new edge();
+            int maxId = -1;
+            for (edge edge : GraphFactory.getNetw().getEdges())
+				if(edge.getId() > maxId)
+					maxId = edge.getId();
+			
+            edgeId = Math.max(edgeId, maxId + 1);
             e.setId(edgeId ++);
             e.setType(getDefaultType());
             e.setStart(start);

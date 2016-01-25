@@ -249,7 +249,7 @@ public class graph_viewer{
      * @param Size	the size of the board 
      * @return	the y axe value of the location on the board
      */
-	private static int getCoordinate_y(coordinate coordinate) {
+	public static int getCoordinate_y(coordinate coordinate) {
 		Dimension size = getSize();
 		double distance = CoordinateManager.latitudeConstant()
 				* Math.abs(coordinate.getLatitude() + 90);
@@ -266,7 +266,7 @@ public class graph_viewer{
      * @return	the x axe value of the location on the board
      * @author Masoud Gholami
      */
-	private static int getCoordinate_x(coordinate coordinate) {
+	public static int getCoordinate_x(coordinate coordinate) {
 		Dimension size = getSize();
 		double distance = CoordinateManager.longitudeConstant(coordinate.getLatitude())
 				* Math.abs(coordinate.getLongitude() + 180);

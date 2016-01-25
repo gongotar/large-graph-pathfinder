@@ -10,7 +10,6 @@ import java.util.Map;
 import model.coordinate;
 import model.edge;
 import model.node;
-import model.timetable_row;
 
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -22,7 +21,6 @@ import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
-import test_data.city;
 import enums.DbEdgePropertiesEnum;
 import enums.DbNodePropertiesEnum;
 import enums.edge_type;
@@ -64,9 +62,24 @@ public class GraphDatabase {
 	 * @see GraphDatabase
 	 */
 	public void init(){
+		File file = new File(this.getPath());
 		this.setGraphDb(new GraphDatabaseFactory()
-				.newEmbeddedDatabase(new File((this.getPath()))));
+				.newEmbeddedDatabase(file));
 		registerShutdownHook(this.getGraphDb());
+	}
+	
+	/**
+	 * Clears the database and removes all of 
+	 * the edges and nodes
+	 * 
+	 * @see GraphDatabase
+	 */
+	public void clearDatabase(){
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			this.getGraphDb()
+					.execute("MATCH (n) DETACH DELETE n");
+			tx.success();
+		}
 	}
 	
 	/**
@@ -81,11 +94,11 @@ public class GraphDatabase {
 	/**
 	 * Returns all of the edges in the database
 	 * 
+	 * @param	nodes	the nodes of the graph
 	 * @return	database edges
 	 * @see GraphDatabase
 	 */
-	@SuppressWarnings("unchecked")
-	public ArrayList<edge> getAllEdges(){
+	public ArrayList<edge> getAllEdges(ArrayList<node> nodes){
 		ArrayList<edge> edges = new ArrayList<edge>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
@@ -98,8 +111,23 @@ public class GraphDatabase {
 						.id.toString()));
 				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
 						.feasible.toString()));
-				edge.setTimetable((ArrayList<timetable_row>) rel
-						.getProperty(DbEdgePropertiesEnum.timetable.toString()));
+				//edge.setTimetable((ArrayList<timetable_row>) rel
+					//	.getProperty(DbEdgePropertiesEnum.timetable.toString()));
+				int id_n1 = (int) rel.getStartNode()
+						.getProperty(DbNodePropertiesEnum.id.toString());
+				int id_n2 = (int) rel.getEndNode()
+						.getProperty(DbNodePropertiesEnum.id.toString());
+				
+				for (node node : nodes) {
+					if(node.getId() == id_n1){
+						edge.setStart(node);
+						node.getOutgoing_edges().add(edge);
+					}
+					if(node.getId() == id_n2){
+						edge.setEnd(node);
+						node.getIncoming_edges().add(edge);
+					}
+				}
 				
 				RelationshipType type = rel.getType();
 				edge.setType(edge_type.valueOf(type.name()));
@@ -127,8 +155,8 @@ public class GraphDatabase {
 				Node n = (Node) row.get("n");
 				node node = new node();
 				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));
-				node.setCity((city) n.getProperty(DbNodePropertiesEnum.city.toString()));
-				node.setCoordinate((coordinate) n.getProperty(DbNodePropertiesEnum.coordinate.toString()));
+				node.setCoordinate(coordinate.Parse((String)n.getProperty
+						(DbNodePropertiesEnum.coordinate.toString())));
 				
 				Iterable<Label> l = n.getLabels();
 				for (Label label : l)
@@ -146,11 +174,12 @@ public class GraphDatabase {
 	 * given type
 	 * 
 	 * @param	type	the type of the edge
+	 * @param	nodes	the nodes of the graph
 	 * @return	database edges
 	 * @see GraphDatabase
 	 */
-	@SuppressWarnings("unchecked")
-	public ArrayList<edge> getEdgesofType(edge_type type){
+	public ArrayList<edge> getEdgesOfType(edge_type type
+			, ArrayList<node> nodes){
 		ArrayList<edge> edges = new ArrayList<edge>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
@@ -164,10 +193,26 @@ public class GraphDatabase {
 						.id.toString()));
 				edge.setFeasible((boolean) rel.getProperty(DbEdgePropertiesEnum
 						.feasible.toString()));
-				edge.setTimetable((ArrayList<timetable_row>) rel
-						.getProperty(DbEdgePropertiesEnum.timetable.toString()));
+				//edge.setTimetable((ArrayList<timetable_row>) rel
+					//	.getProperty(DbEdgePropertiesEnum.timetable.toString()));
 				
 				edge.setType(type);
+
+				int id_n1 = (int) rel.getStartNode()
+						.getProperty(DbNodePropertiesEnum.id.toString());
+				int id_n2 = (int) rel.getEndNode()
+						.getProperty(DbNodePropertiesEnum.id.toString());
+				
+				for (node node : nodes) {
+					if(node.getId() == id_n1){
+						edge.setStart(node);
+						node.getOutgoing_edges().add(edge);
+					}
+					if(node.getId() == id_n2){
+						edge.setEnd(node);
+						node.getIncoming_edges().add(edge);
+					}
+				}
 				
 				edges.add(edge);
 		    }
@@ -184,19 +229,20 @@ public class GraphDatabase {
 	 * @return	database nodes
 	 * @see GraphDatabase
 	 */
-	public ArrayList<node> getAllNodes(node_type type){
+	public ArrayList<node> getNodesOfType(node_type type){
 		ArrayList<node> nodes = new ArrayList<node>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
 					.execute("MATCH (n:" + type.toString() 
 							+ ") RETURN n;");
 			while (result.hasNext()){
+				
 				Map<String, Object> row = result.next();
 				Node n = (Node) row.get("n");
 				node node = new node();
 				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));
-				node.setCity((city) n.getProperty(DbNodePropertiesEnum.city.toString()));
-				node.setCoordinate((coordinate) n.getProperty(DbNodePropertiesEnum.coordinate.toString()));
+				node.setCoordinate(coordinate.Parse((String)n.getProperty
+						(DbNodePropertiesEnum.coordinate.toString())));
 				
 				node.setType(type);
 				
@@ -232,10 +278,8 @@ public class GraphDatabase {
 			n.addLabel(label);
 			n.setProperty(DbNodePropertiesEnum.id.toString()
 					, node.getId());
-			n.setProperty(DbNodePropertiesEnum.city.toString()
-					, node.getCity());
 			n.setProperty(DbNodePropertiesEnum.coordinate
-					.toString(), node.getCoordinate());
+					.toString(), node.getCoordinate().toString());
 			
 			tx.success();
 		}
@@ -265,10 +309,8 @@ public class GraphDatabase {
 				n.addLabel(label);
 				n.setProperty(DbNodePropertiesEnum.id.toString()
 						, node.getId());
-				n.setProperty(DbNodePropertiesEnum.city.toString()
-						, node.getCity());
 				n.setProperty(DbNodePropertiesEnum.coordinate
-						.toString(), node.getCoordinate());
+						.toString(), node.getCoordinate().toString());
 			}
 			
 			tx.success();
@@ -305,8 +347,8 @@ public class GraphDatabase {
 					.toString(), edge.getId());
 			relationship.setProperty(DbEdgePropertiesEnum.feasible
 					.toString(), edge.isFeasible());
-			relationship.setProperty(DbEdgePropertiesEnum.timetable
-					.toString(), edge.getTimetable());
+			//relationship.setProperty(DbEdgePropertiesEnum.timetable
+				//	.toString(), edge.getTimetable());
 			
 			tx.success();
 		}
@@ -344,8 +386,8 @@ public class GraphDatabase {
 						.toString(), edge.getId());
 				relationship.setProperty(DbEdgePropertiesEnum.feasible
 						.toString(), edge.isFeasible());
-				relationship.setProperty(DbEdgePropertiesEnum.timetable
-						.toString(), edge.getTimetable());
+				//relationship.setProperty(DbEdgePropertiesEnum.timetable
+					//	.toString(), edge.getTimetable());
 				
 			}
 			
