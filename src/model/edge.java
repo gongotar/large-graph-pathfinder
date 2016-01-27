@@ -36,15 +36,18 @@ public class edge {
 	@Override
 	public String toString(){
 		String text = "";
+		text += this.getId();
+		text += ";";
 		text += this.getType().toString();
-		//text += this.getStart().getId();
-		//text += ":";
-		//text += this.getEnd().getId();
+		text += ";";
+		text += this.getStart().getId();
+		text += ":";
+		text += this.getEnd().getId();
 		//text += ", ";
 		if(!this.isFeasible())
 			text += " (unfeasible)";
-		else
-			text += ", " + this.getTimetable();
+		//else
+		//	text += ", " + this.getTimetable();
 		return text;
 	}
 	

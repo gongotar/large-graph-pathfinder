@@ -170,7 +170,11 @@ public class dijkstra {
 		int new_change = compute_new_change(l, row, e.getType());
 		new_label.setChange(new_change);			// set the new change
 		
-		double new_risk = compute_new_risk(l, row, e.getType());
+		double new_risk = 0;
+		if(new_label.getChange() != l.getChange())
+			new_risk = compute_new_risk(l, row, e.getType());
+		else new_risk = l.getRisk();
+		
 		new_label.setRisk(new_risk);				// set the new risk
 		
 		new_label.setStart(starttime);
@@ -189,8 +193,40 @@ public class dijkstra {
 	 *  @see dijkstra
 	 */
 	private static double compute_new_risk(label l, timetable_row row, edge_type edge_type) {
-		// TODO Risk evaluation algorithms here
-		return 0;
+		
+		// if walking edge then no risk
+		if(edge_type.equals(enums.edge_type.walk))
+			return 0;
+		
+		// get the arriving and departure time
+		LocalTime arrived_at = LocalTime.from(l.getStart()).plus(l.getDuration());
+		LocalTime departure_at = row.getStart_time();
+		
+		// get the last line used to reach here
+		int size = l.getPath().size() - 1;
+		timetable_row last_row = get_label_row(l, size);
+		double arrive_risk = 0;
+		// get the info about the variation of the last line
+		if(! l.getPath().get(size)
+				.getEdge().getType()
+				.equals(enums.edge_type.walk))
+			arrive_risk = last_row.getVariation();
+		
+		// add the variation of last line to the arriving time
+		// so we get the late arrive time
+		LocalTime late_arrive = arrived_at
+				.plusMinutes((int) Math.ceil(arrive_risk));
+		
+		// if the departure time is before the late arrive then
+		// we have a risky change here
+		Duration risky_time = Duration.ZERO;
+		if(departure_at.isBefore(late_arrive))
+			risky_time = Duration.between(departure_at, late_arrive);
+		
+		// No. of risky minutes considered as risk measurement
+		double risk = (double)(risky_time.getSeconds()) / 60;
+		
+		return risk + l.getRisk();
 	}
 
 	/**
