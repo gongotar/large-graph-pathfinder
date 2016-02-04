@@ -57,7 +57,7 @@ public class EditorMouseMenu {
     	create_graph_visually(netw);
     }
     
-    private static void create_graph_visually(final network netw){
+    public static void create_graph_visually(final network netw){
         final JFrame frame = new JFrame("Editing and Mouse Menu Demo");
         GraphFactory.setNetw(netw);
         final DirectedGraph<node, edge> g =

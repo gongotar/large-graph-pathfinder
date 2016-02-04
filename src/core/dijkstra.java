@@ -223,10 +223,13 @@ public class dijkstra {
 		if(departure_at.isBefore(late_arrive))
 			risky_time = Duration.between(departure_at, late_arrive);
 		
-		// No. of risky minutes considered as risk measurement
-		double risk = (double)(risky_time.getSeconds()) / 60;
+		// No. of risky time seconds
+		double risk = risky_time.getSeconds();
 		
-		return risk + l.getRisk();
+		// No of total seconds
+		double total = row.getVariation() * 60;
+		
+		return risk / total + l.getRisk();
 	}
 
 	/**

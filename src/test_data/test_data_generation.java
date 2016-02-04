@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import enums.edge_type;
+import graphics.graph_viewer;
 import model.CoordinateManager;
 import model.coordinate;
 import model.edge;
@@ -24,7 +25,9 @@ import model.timetable_row;
 public class test_data_generation {
 
 	public static void main(String args[]){
-
+		network netw = generate_netw(20);
+		graph_viewer.show_graph(netw);
+				
 	}
 	
 	/**
