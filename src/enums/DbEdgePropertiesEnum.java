@@ -9,6 +9,7 @@ package enums;
  */
 public enum DbEdgePropertiesEnum {
 	id,
+	distance,
 	feasible,
 	timetable;
 }

@@ -39,7 +39,9 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
     private void initComponents() {
         jButton1 = new javax.swing.JButton();
         jLabelType = new javax.swing.JLabel();
+        jLabelDist = new javax.swing.JLabel();
         TypeTextField = new javax.swing.JFormattedTextField();
+        DistTextField = new javax.swing.JFormattedTextField();
         jLabelFeasible = new javax.swing.JLabel();
         FeasibleCheckBox = new javax.swing.JCheckBox();
 
@@ -54,6 +56,7 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
 
         jLabelType.setText("Type: ");
         jLabelFeasible.setText("Feasible: ");
+        jLabelDist.setText("Distance: ");
 
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -67,11 +70,13 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabelType)
+                            .add(jLabelDist)
                             .add(jLabelFeasible))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(TypeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(TypeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(DistTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .add(FeasibleCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -84,6 +89,10 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
                     .add(TypeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            		.add(jLabelDist)
+                    .add(DistTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelFeasible)
                     .add(FeasibleCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -94,6 +103,7 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
 
     private void okButtonHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonHandler
         edge.setType(edge_type.valueOf(this.TypeTextField.getValue().toString()));
+        edge.setDistance(Double.valueOf(this.DistTextField.getValue().toString()));
         edge.setFeasible(this.FeasibleCheckBox.isSelected());
         dispose();
     }//GEN-LAST:event_okButtonHandler
@@ -101,10 +111,12 @@ public class EdgePropertyDialog extends javax.swing.JDialog {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFormattedTextField TypeTextField;
+    private javax.swing.JFormattedTextField DistTextField;
     private javax.swing.JCheckBox FeasibleCheckBox;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabelType;
     private javax.swing.JLabel jLabelFeasible;
+    private javax.swing.JLabel jLabelDist;
     // End of variables declaration//GEN-END:variables
     
 }

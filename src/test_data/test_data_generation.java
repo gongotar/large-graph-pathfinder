@@ -385,7 +385,7 @@ public class test_data_generation {
 	 * @return	a set of new timetable rows for the given edge
 	 * @see test_data_generation
 	 */
-	private static ArrayList<timetable_row> generate_timetable_row(edge edge,
+	public static ArrayList<timetable_row> generate_timetable_row(edge edge,
 			edge save_edge) {
 		// average line length
 		int	line_len = 10;
@@ -394,7 +394,7 @@ public class test_data_generation {
 		int waiting_minutes = 2;
 		
 		// no. of repeated lines at each station
-		int line_no = 4;
+		int line_no = 6;
 		
 		// cost factor
 		double[] cost_factor = new double[]{

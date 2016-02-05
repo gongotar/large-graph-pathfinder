@@ -18,6 +18,7 @@ public class edge {
 	private node start, end;
 	private ArrayList<timetable_row> timetable;
 	private edge_type type;
+	private double distance;
 	private boolean feasible = true;
 
 	/**
@@ -142,6 +143,20 @@ public class edge {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the distance
+	 */
+	public double getDistance() {
+		return distance;
+	}
+
+	/**
+	 * @param distance the distance to set
+	 */
+	public void setDistance(double distance) {
+		this.distance = distance;
 	}
 	
 }

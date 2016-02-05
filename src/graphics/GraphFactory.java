@@ -121,6 +121,8 @@ public class GraphFactory {
             e.setType(getDefaultType());
             e.setStart(start);
             e.setEnd(end);
+            e.setDistance(start.getCoordinate()
+            		.getDistanceTo(end.getCoordinate()));
             start.getOutgoing_edges().add(e);
             end.getIncoming_edges().add(e);
             GraphFactory.getNetw().getEdges().add(e);

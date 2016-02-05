@@ -10,15 +10,15 @@ import java.util.Map;
 import model.coordinate;
 import model.edge;
 import model.node;
-import org.neo4j.graphdb.GraphDatabaseService;
 
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
+import enums.DbEdgePropertiesEnum_alt;
 import enums.DbNodePropertiesEnum_alt;
 import enums.edge_type;
 import enums.node_type;
@@ -104,6 +104,9 @@ public class ReadDatabase_alt {
 				Relationship rel = (Relationship) row.get("r");
 				edge edge = new edge();
 				edge.setId((int) rel.getId());
+				edge.setDistance(Double.valueOf
+						(rel.getProperty(DbEdgePropertiesEnum_alt
+								.distance.toString()).toString()));
 				edge.setFeasible(true);
 				int id_n1 = (int) rel.getStartNode().getId();
 				int id_n2 = (int) rel.getEndNode().getId();

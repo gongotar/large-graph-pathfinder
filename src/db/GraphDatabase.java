@@ -355,6 +355,8 @@ public class GraphDatabase {
 					.toString(), edge.getId());
 			relationship.setProperty(DbEdgePropertiesEnum.feasible
 					.toString(), edge.isFeasible());
+			relationship.setProperty(DbEdgePropertiesEnum.distance
+					.toString(), edge.getDistance());
 			
 			String[] timetable = new String[edge.getTimetable().size()];
 			
@@ -398,6 +400,8 @@ public class GraphDatabase {
 				
 				relationship.setProperty(DbEdgePropertiesEnum.id
 						.toString(), edge.getId());
+				relationship.setProperty(DbEdgePropertiesEnum.distance
+						.toString(), edge.getDistance());
 				relationship.setProperty(DbEdgePropertiesEnum.feasible
 						.toString(), edge.isFeasible());
 				
