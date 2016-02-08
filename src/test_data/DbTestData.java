@@ -4,15 +4,16 @@
 package test_data;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import core.dijkstra;
 import db.ReadDatabase_alt;
 import enums.edge_type;
-import graphics.EditorMouseMenu;
 import model.edge;
 import model.network;
 import model.node;
@@ -33,7 +34,18 @@ public class DbTestData {
 		network netw = getDataFromDb(path);
 		fix_network_edges(netw);
 		traverseEulerianPath(netw);
-		EditorMouseMenu.create_graph_visually(netw);
+		ArrayList<node> nodes = new ArrayList<node>();
+		node node = null;
+		for (node n : netw.getNodes()) {
+			if(n.getId() == 897){
+				node = n;
+				break;
+			}
+		}
+		nodes.add(node);
+		dijkstra.netw = netw;
+		//EditorMouseMenu.create_graph_visually(netw);
+		dijkstra.pareto_opt(nodes, LocalDateTime.now());
 	}
 
 	/**
@@ -148,7 +160,6 @@ public class DbTestData {
 	 * @see DbTestData
 	 */
 	private static int createTimeTable(edge current_edge, edge last_edge, int last_line) {
-		// TODO Auto-generated method stub
 		// average line length
 		int	line_len = 10;
 		
@@ -166,6 +177,9 @@ public class DbTestData {
 		
 		// cost factor
 		double cost_factor = 1.2;	// train
+		
+		// fixed cost
+		double fixed_cost = 20;
 
 		// duration/distance constant. normal duration per kilometer
 		Duration duration_dist_const = Duration.ofSeconds(40);
@@ -176,6 +190,12 @@ public class DbTestData {
 		// duration factor
 		double duration_factor = 1.0;	// train
 				
+		// fixed duration
+		Duration fixed_duration = Duration.ofSeconds(60);
+		
+		// maximum variance of delays in minutes
+		double max_variance = 5;
+		
 		/*
 		 * Create the timetable rows
 		 */
@@ -211,7 +231,7 @@ public class DbTestData {
 			double cost_rnd_var = 1 - (cost_variance 
 					* (rnd.nextDouble() * 2 - 1));
 			// compute the randomized cost
-			double cost = cost_factor * current_edge.getDistance() * 
+			double cost = fixed_cost + cost_factor * current_edge.getDistance() * 
 					cost_dist_const * cost_rnd_var;
 			
 			new_rows.get(i).setCost(cost);
@@ -220,7 +240,11 @@ public class DbTestData {
 					.multipliedBy((long)
 							(duration_factor * current_edge
 									.getDistance() 
-									* dur_rnd_var));	
+									* dur_rnd_var)).plus(fixed_duration);
+			
+			double variance = rnd.nextDouble() * 
+					Math.min(durations[i].toMinutes(), max_variance);
+			new_rows.get(i).setVariation(variance);
 		}
 		
 		// compute departure/arrive times

@@ -10,6 +10,7 @@ import enums.edge_type;
 import model.connection;
 import model.edge;
 import model.label;
+import model.network;
 import model.node;
 import model.timetable_row;
 
@@ -24,6 +25,8 @@ import model.timetable_row;
 
 public class dijkstra {
 
+	public static network netw;
+	
 	public static void main(String args[]){
 		
 	}
@@ -53,16 +56,32 @@ public class dijkstra {
 		while(!pq.isEmpty()){
 			label l = pq.poll();
 			node node = l.getNode();
+			report();
 			for (edge e : node.getOutgoing_edges()) {
 				if(!e.isFeasible()) continue;						// ignore this edge
 				label new_label = create_label(l, e, starttime);
-				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels 
+				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels
 					continue;
 				new_label.setNode(e.getEnd());
 				pq.add(new_label);
 				remove_dominated_labels(e.getEnd(), new_label);
 			}
 		}
+	}
+
+	private static void report() {
+		if(netw == null)
+			return;
+		ArrayList<node> nodes = netw.getNodes();
+		int c = 0, p = 0;
+		for (node node : nodes) {
+			if(node.getLabels().size() > 0){
+				c ++;
+				p += node.getLabels().size();
+			}
+		}
+		System.out.println(c + " from " + nodes.size() + 
+				" (" + p + " labels added)");
 	}
 
 	/**

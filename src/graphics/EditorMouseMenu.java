@@ -18,13 +18,14 @@ import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -79,6 +80,20 @@ public class EditorMouseMenu {
 						return point;
 					}
 				};
+				
+		Transformer<node, Paint> node_color = new Transformer<node, Paint>() {
+			
+			@Override
+			public Paint transform(node arg0) {
+				if(arg0.getId() == 897)
+					return Color.YELLOW;
+				else
+					return Color.RED;
+			}
+		};		
+		
+		// Set the transformer of node color
+		vv.getRenderContext().setVertexFillPaintTransformer(node_color );
 				
 		// Set the transformer of node location to the layout
 		layout.setInitializer(node_location);
