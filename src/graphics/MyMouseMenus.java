@@ -11,15 +11,22 @@ package graphics;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.apache.commons.collections15.Transformer;
+
+import model.connection;
 import model.edge;
+import model.label;
 import model.network;
 import model.node;
 
@@ -96,6 +103,7 @@ public class MyMouseMenus {
             this.add(new NodePropItem(frame));
             this.add(new NodeLabels(frame));
             this.add(new ParetoOptimals(frame, netw));
+            this.add(new HighlightPath(frame));
         }
     }
     
@@ -212,6 +220,7 @@ public class MyMouseMenus {
         
         public void setVertexAndView(node v, VisualizationViewer<node, edge> visComp) {
             this.v = v;
+            this.visComp = visComp;
             this.setSelected(true);
         }
         
@@ -228,4 +237,54 @@ public class MyMouseMenus {
         }
     }
 
+    public static class HighlightPath extends JMenuItem implements VertexMenuListener<node>,
+    MenuPointListener {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		node v;
+		VisualizationViewer<node, edge> visComp;
+        Point2D point;
+
+        public void setPoint(Point2D point) {
+            this.point = point;
+        }
+        
+        public void setVertexAndView(node v, VisualizationViewer<node, edge> visComp) {
+            this.v = v;
+            this.visComp = visComp;
+            this.setSelected(true);
+        }
+        
+        public HighlightPath(final JFrame frame) {            
+            super("Highlight Path...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                	ArrayList<label> labels = v.getLabels();
+                	final ArrayList<edge> edges = new ArrayList<edge>();
+                	for (label label : labels) {
+						for (connection<edge, Integer> conn : label.getPath()) {
+							edges.add(conn.getEdge());
+						}
+					}
+                	Transformer<edge, Paint> edges_color =
+                			new Transformer<edge, Paint>() {
+								@Override
+								public Paint transform(edge arg0) {
+									for (edge edge : edges) {
+										if(arg0.getId() == edge.getId())
+											return Color.YELLOW;
+									}
+									return null;
+								}
+							};
+					visComp.getRenderContext().setEdgeFillPaintTransformer(edges_color);
+                }
+                
+            });
+        }
+    }
+
+    
 }
