@@ -159,7 +159,7 @@ public class GraphDatabase {
 				Map<String, Object> row = result.next();
 				Node n = (Node) row.get("n");
 				node node = new node();
-				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));
+				node.setId((int) n.getProperty(DbNodePropertiesEnum.id.toString()));				
 				node.setCoordinate(coordinate.Parse((String)n.getProperty
 						(DbNodePropertiesEnum.coordinate.toString())));
 				

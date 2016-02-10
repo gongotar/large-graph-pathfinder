@@ -98,7 +98,7 @@ public class coordinate implements Comparable<coordinate>{
   }
   
   public String toString() {
-    return format.format(latitude) + ", " + format.format(longitude);
+    return format.format(latitude) + "; " + format.format(longitude);
   }
   
   /**
@@ -108,7 +108,9 @@ public class coordinate implements Comparable<coordinate>{
    * @author Masoud Gholami
    */
   public static coordinate Parse(String str){
-	  String[] parts = str.split(",");
+	  String[] parts = str.split(";");
+	  parts[0] = parts[0].replace(",", ".");
+	  parts[1] = parts[1].replace(",", ".");
 	  float latitude = Float.parseFloat(parts[0].trim());
 	  float longitude = Float.parseFloat(parts[1].trim());
 	  return new coordinate(latitude, longitude);

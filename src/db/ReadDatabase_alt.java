@@ -147,9 +147,10 @@ public class ReadDatabase_alt {
 				Node n = (Node) row.get("n");
 				node node = new node();
 				node.setId((int)n.getId());
-				node.setCoordinate(new coordinate(Float.valueOf(n.getProperty
+				coordinate c = new coordinate(Float.valueOf(n.getProperty
 						(DbNodePropertiesEnum_alt.lat.toString()).toString()),
-						Float.valueOf(n.getProperty(DbNodePropertiesEnum_alt.lon.toString()).toString())));
+						Float.valueOf(n.getProperty(DbNodePropertiesEnum_alt.lon.toString()).toString()));
+				node.setCoordinate(c);
 				
 				node.setType(node_type.car_station);
 				

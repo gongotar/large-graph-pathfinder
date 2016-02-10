@@ -58,7 +58,7 @@ public class dijkstra {
 			node node = l.getNode();
 			report();
 			for (edge e : node.getOutgoing_edges()) {
-				if(!e.isFeasible()) continue;						// ignore this edge
+				if(!e.isFeasible()) continue;		// ignore this edge
 				label new_label = create_label(l, e, starttime);
 				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels
 					continue;
@@ -134,12 +134,12 @@ public class dijkstra {
 		// simply checking if all label attributes are less than or equal to
 		// new label attributes
 		if(label.getCost() == new_label.getCost()
-				&& label.getDuration().compareTo(new_label.getDuration()) == 0
+				&& label.getDuration().getSeconds() == new_label.getDuration().getSeconds()
 				&& label.getChange() == new_label.getChange()
 				&& label.getRisk() == new_label.getRisk())
 			return false;
 		else if(label.getCost() <= new_label.getCost()
-				&& label.getDuration().compareTo(new_label.getDuration()) <= 0
+				&& label.getDuration().getSeconds() <= new_label.getDuration().getSeconds()
 				&& label.getChange() <= new_label.getChange()
 				&& label.getRisk() <= new_label.getRisk())
 			return true;
@@ -316,11 +316,19 @@ public class dijkstra {
 		// compute the duration using the start time of
 		// the journey and the end time of the new edge
 		Duration duration;
-		if(edge_type.equals(enums.edge_type.walk))						// if walking edge then simply add
-																		// the edge duration to the label duration
+		if(edge_type.equals(enums.edge_type.walk)){					// if walking edge then simply add
+																	// the edge duration to the label duration
 			duration = Duration.between(row.getStart_time(), row.getEnd_time()).plus(l.getDuration());
-		else
-			duration = Duration.between(l.getStart().toLocalTime(), row.getEnd_time());
+		}
+		else{
+			if(row.getEnd_time().isBefore(l.getStart().toLocalTime())){
+				duration = Duration.between(l.getStart().toLocalTime(), LocalTime.MAX)
+						.plus(Duration.between(LocalTime.MIN, row.getEnd_time()));
+				
+			}
+			else
+				duration = Duration.between(l.getStart().toLocalTime(), row.getEnd_time());
+		}
 		return duration;
 	}
 
@@ -370,7 +378,7 @@ public class dijkstra {
 		Duration waiting_time = Duration.between(arrived_at, LocalDateTime.MAX);
 		for (timetable_row row : timetable) {					// finding the minimum waiting time
 			if(arrived_at.isBefore(row.getStart_time().minusMinutes(minimum_waiting_minutes))
-					&& Duration.between(arrived_at, row.getStart_time()).compareTo(waiting_time) < 0){
+					&& Duration.between(arrived_at, row.getStart_time()).getSeconds() < waiting_time.getSeconds()){
 				waiting_time = Duration.between(arrived_at, row.getStart_time());
 				min_index = index;
 			}
