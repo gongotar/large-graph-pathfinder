@@ -17,6 +17,7 @@ public class label {
 	private ArrayList<connection<edge, Integer>> path;
 	private Duration		duration;
 	private LocalDateTime	start;
+	private LocalDateTime	end;
 	private int		change;
 	private double	risk;
 	private double	cost;
@@ -180,6 +181,20 @@ public class label {
 	 */
 	public void setStart(LocalDateTime start) {
 		this.start = start;
+	}
+
+	/**
+	 * @return the end
+	 */
+	public LocalDateTime getEnd() {
+		return end;
+	}
+
+	/**
+	 * @param end the end to set
+	 */
+	public void setEnd(LocalDateTime end) {
+		this.end = end;
 	}
 	
 }

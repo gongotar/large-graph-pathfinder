@@ -50,6 +50,7 @@ public class dijkstra {
 		for (node n : startnodes) {
 			label l = new label(n);
 			l.setStart(starttime);
+			l.setEnd(starttime);
 			pq.add(l);
 		}
 		
@@ -180,6 +181,9 @@ public class dijkstra {
 		
 		timetable_row row = timetable.get(index);
 		
+		LocalDateTime new_end = compute_new_end(l, row);
+		new_label.setEnd(new_end);					// set the new end
+		
 		double new_cost = compute_new_cost(l, row);
 		new_label.setCost(new_cost);				// set the new cost
 		
@@ -199,6 +203,32 @@ public class dijkstra {
 		new_label.setStart(starttime);
 		
 		return new_label;
+	}
+
+	/**
+	 * Computes the end time of the new label considering the 
+	 * end time of the previous label and the timetable row
+	 * used in the path
+	 * @param l		the previous label
+	 * @param row	the timetable row used
+	 * @return	the end time of the new label
+	 * @see dijkstra
+	 */
+	private static LocalDateTime compute_new_end(label l, timetable_row row) {
+		LocalDateTime end = l.getEnd();
+		
+		LocalTime end_time = l.getEnd().toLocalTime();
+		
+		Duration delay;
+		if(end_time.isBefore(row.getEnd_time()))
+			delay = Duration.between(end_time, row.getEnd_time());
+		else
+			delay = Duration.between(end_time, LocalTime.MAX)
+					.plus(Duration.between(LocalTime.MIN, row.getEnd_time()));
+		
+		end = end.plus(delay);
+		
+		return end;
 	}
 
 	/**
@@ -318,17 +348,21 @@ public class dijkstra {
 		Duration duration;
 		if(edge_type.equals(enums.edge_type.walk)){					// if walking edge then simply add
 																	// the edge duration to the label duration
-			duration = Duration.between(row.getStart_time(), row.getEnd_time()).plus(l.getDuration());
+			duration = Duration.between(row.getEnd_time(), row.getEnd_time()).plus(l.getDuration());
 		}
 		else{
-			if(row.getEnd_time().isBefore(l.getStart().toLocalTime())){
-				duration = Duration.between(l.getStart().toLocalTime(), LocalTime.MAX)
+			if(row.getEnd_time().isBefore(l.getEnd().toLocalTime())){
+				duration = Duration.between(l.getEnd().toLocalTime(), LocalTime.MAX)
 						.plus(Duration.between(LocalTime.MIN, row.getEnd_time()));
-				
 			}
-			else
-				duration = Duration.between(l.getStart().toLocalTime(), row.getEnd_time());
+			else{
+				LocalTime labelEnd = l.getEnd().toLocalTime();
+				duration = Duration.between(labelEnd, row.getEnd_time());
+			}
+			duration = duration.plus(l.getDuration());
 		}
+		
+		
 		return duration;
 	}
 

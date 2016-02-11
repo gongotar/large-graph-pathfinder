@@ -4,15 +4,16 @@
 package test_data;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import core.dijkstra;
 import db.ReadDatabase_alt;
 import enums.edge_type;
-import graphics.EditorMouseMenu;
 import model.edge;
 import model.network;
 import model.node;
@@ -42,9 +43,9 @@ public class DbTestData {
 			}
 		}
 		nodes.add(node);
-		//dijkstra.netw = netw;
-		EditorMouseMenu.create_graph_visually(netw);
-		//dijkstra.pareto_opt(nodes, LocalDateTime.now());
+		dijkstra.netw = netw;
+		//EditorMouseMenu.create_graph_visually(netw);
+		dijkstra.pareto_opt(nodes, LocalDateTime.now());
 	}
 
 	/**
@@ -178,7 +179,7 @@ public class DbTestData {
 		double cost_factor = 1.2;	// train
 		
 		// fixed cost
-		double fixed_cost = 20;
+		double fixed_cost = 10;
 
 		// duration/distance constant. normal duration per kilometer
 		Duration duration_dist_const = Duration.ofSeconds(40);
