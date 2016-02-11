@@ -188,14 +188,17 @@ public class dijkstra {
 		
 		timetable_row row = timetable.get(index);
 		
-		LocalDateTime new_end = compute_new_end(l, row);
+		new_label.setStart(starttime);
+		
+		LocalDateTime new_end = compute_new_end(l, row, e.getType());
 		new_label.setEnd(new_end);					// set the new end
+		
+		// Duration new_duration = compute_new_duration(l, row, e.getType());
+		Duration new_duration = Duration.between(new_label.getStart(), new_label.getEnd());
+		new_label.setDuration(new_duration);		// set the new duration
 		
 		double new_cost = compute_new_cost(l, row);
 		new_label.setCost(new_cost);				// set the new cost
-		
-		Duration new_duration = compute_new_duration(l, row, e.getType());
-		new_label.setDuration(new_duration);		// set the new duration
 		
 		int new_change = compute_new_change(l, row, e.getType());
 		new_label.setChange(new_change);			// set the new change
@@ -207,8 +210,6 @@ public class dijkstra {
 		
 		new_label.setRisk(new_risk);				// set the new risk
 		
-		new_label.setStart(starttime);
-		
 		return new_label;
 	}
 
@@ -218,16 +219,20 @@ public class dijkstra {
 	 * used in the path
 	 * @param l		the previous label
 	 * @param row	the timetable row used
+	 * @param type	the type of the edge
 	 * @return	the end time of the new label
 	 * @see dijkstra
 	 */
-	private static LocalDateTime compute_new_end(label l, timetable_row row) {
+	private static LocalDateTime compute_new_end(label l, timetable_row row, edge_type type) {
 		LocalDateTime end = l.getEnd();
 		
 		LocalTime end_time = l.getEnd().toLocalTime();
 		
 		Duration delay;
-		if(end_time.isBefore(row.getEnd_time()))
+		
+		if(type.equals(enums.edge_type.walk))
+			delay = Duration.between(row.getStart_time(), row.getEnd_time());
+		else if(end_time.isBefore(row.getEnd_time()))
 			delay = Duration.between(end_time, row.getEnd_time());
 		else
 			delay = Duration.between(end_time, LocalTime.MAX)
@@ -347,7 +352,7 @@ public class dijkstra {
 	 *  @param	edge_type	the type of the edge
 	 *  @return	new duration
 	 *  @see dijkstra
-	 */
+	 *
 	private static Duration compute_new_duration(label l, timetable_row row, edge_type edge_type) {
 		 
 		// compute the duration using the start time of
@@ -355,7 +360,7 @@ public class dijkstra {
 		Duration duration;
 		if(edge_type.equals(enums.edge_type.walk)){					// if walking edge then simply add
 																	// the edge duration to the label duration
-			duration = Duration.between(row.getEnd_time(), row.getEnd_time()).plus(l.getDuration());
+			duration = Duration.between(row.getStart_time(), row.getEnd_time()).plus(l.getDuration());
 		}
 		else{
 			if(row.getEnd_time().isBefore(l.getEnd().toLocalTime())){
@@ -369,9 +374,8 @@ public class dijkstra {
 			duration = duration.plus(l.getDuration());
 		}
 		
-		
 		return duration;
-	}
+	}*/
 
 	/**
 	 * Computes the new cost considering the cost of the label and 
