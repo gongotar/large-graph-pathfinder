@@ -179,7 +179,7 @@ public class DbTestData {
 		double cost_factor = 1.2;	// train
 		
 		// fixed cost
-		double fixed_cost = 10;
+		double fixed_cost = 3;
 
 		// duration/distance constant. normal duration per kilometer
 		Duration duration_dist_const = Duration.ofSeconds(40);

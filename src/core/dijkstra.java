@@ -26,6 +26,7 @@ import model.timetable_row;
 public class dijkstra {
 
 	public static network netw;
+	private static LocalTime algorithm_start = null;
 	
 	public static void main(String args[]){
 		
@@ -73,6 +74,9 @@ public class dijkstra {
 	private static void report() {
 		if(netw == null)
 			return;
+		if(algorithm_start == null)
+			algorithm_start = LocalTime.now();
+		
 		ArrayList<node> nodes = netw.getNodes();
 		int c = 0, p = 0;
 		for (node node : nodes) {
@@ -81,8 +85,11 @@ public class dijkstra {
 				p += node.getLabels().size();
 			}
 		}
+		
 		System.out.println(c + " from " + nodes.size() + 
-				" (" + p + " labels added)");
+				" (" + p + " labels added) in " + 
+				Duration.between(algorithm_start,
+						LocalTime.now()).toMillis() + " ms");
 	}
 
 	/**
