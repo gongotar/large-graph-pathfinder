@@ -24,6 +24,7 @@ import javax.swing.JPopupMenu;
 
 import org.apache.commons.collections15.Transformer;
 
+import core.dijkstra;
 import model.connection;
 import model.edge;
 import model.label;
@@ -103,6 +104,7 @@ public class MyMouseMenus {
             this.add(new NodePropItem(frame));
             this.add(new NodeLabels(frame));
             this.add(new ParetoOptimals(frame, netw));
+            this.add(new SetTarget(frame));
             this.add(new HighlightPath(frame));
         }
     }
@@ -133,6 +135,36 @@ public class MyMouseMenus {
                     NodePropertyDialog dialog = new NodePropertyDialog(frame, v);
                     dialog.setLocation((int)point.getX()+ frame.getX(), (int)point.getY()+ frame.getY());
                     dialog.setVisible(true);
+                }
+                
+            });
+        }
+    }
+
+    public static class SetTarget extends JMenuItem implements VertexMenuListener<node>,
+    MenuPointListener {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		node v;
+		VisualizationViewer<node, edge> visComp;
+        Point2D point;
+
+        public void setPoint(Point2D point) {
+            this.point = point;
+        }
+        
+        public void setVertexAndView(node v, VisualizationViewer<node, edge> visComp) {
+            this.v = v;
+            this.setSelected(true);
+        }
+        
+        public SetTarget(final JFrame frame) {           
+        	super("Set as Target");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dijkstra.target = v;
                 }
                 
             });

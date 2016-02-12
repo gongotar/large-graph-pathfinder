@@ -18,12 +18,15 @@ import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -175,6 +178,19 @@ public class EditorMouseMenu {
 				for (edge edge : netw.getEdges())
 					g.addEdge(edge, edge.getStart(), edge.getEnd());
 				
+				Transformer<node, Paint> node_color = new Transformer<node, Paint>() {
+					
+					@Override
+					public Paint transform(node arg0) {
+						if(arg0.getLabels().size() > 0)
+							return Color.YELLOW;
+						else
+							return Color.RED;
+					}
+				};
+				
+				vv.getRenderContext().setVertexFillPaintTransformer(node_color);
+				
 				frame.repaint();
 				super.mouseEntered(e);
 			}
@@ -267,10 +283,33 @@ public class EditorMouseMenu {
 	            dialog.setVisible(true);
 			}
 		});
+
+        JMenuItem item4 = new JMenuItem("Highight checked nodes");
+        item4.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				Transformer<node, Paint> node_color = new Transformer<node, Paint>() {
+					
+					@Override
+					public Paint transform(node arg0) {
+						if(arg0.getLabels().size() > 0)
+							return Color.YELLOW;
+						else
+							return Color.RED;
+					}
+				};
+				
+				vv.getRenderContext().setVertexFillPaintTransformer(node_color);
+			}
+		});
+
         
         modeMenu.add(item1);
         modeMenu.add(item2);
         modeMenu.add(item3);
+        modeMenu.add(item4);
         
         modeMenu.setText("Mouse Mode");
         modeMenu.setIcon(null); // I'm using this in a main menu

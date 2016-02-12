@@ -3,6 +3,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -25,8 +26,8 @@ import model.timetable_row;
 
 public class dijkstra {
 
-	public static network netw;
 	private static LocalTime algorithm_start = null;
+	public static node target = null;
 	
 	public static void main(String args[]){
 		
@@ -44,8 +45,7 @@ public class dijkstra {
 	 */
 	
 	public static void pareto_opt(ArrayList<node> startnodes,
-			LocalDateTime starttime){
-		
+			LocalDateTime starttime, network netw){
 		Queue<label> pq = new LinkedList<label>();
 		
 		for (node n : startnodes) {
@@ -55,11 +55,22 @@ public class dijkstra {
 			pq.add(l);
 		}
 		
+		ArrayList<node> a_star_path = 
+				a_star(startnodes, target, netw);
+		
+		double path_len = 0;
+		for (int i = 0; i < a_star_path.size() - 1; i++)
+			path_len += a_star_path.get(i).getCoordinate()
+					.getDistanceTo(a_star_path.get(i + 1).getCoordinate());
+		
+		
 		while(!pq.isEmpty()){
 			label l = pq.poll();
 			node node = l.getNode();
-			report();
+			report(netw, false);
 			for (edge e : node.getOutgoing_edges()) {
+				if(!check_heuristics(e.getEnd(), a_star_path, path_len))		// better performance by checking only some nodes
+					continue;
 				if(!e.isFeasible()) continue;		// ignore this edge
 				label new_label = create_label(l, e, starttime);
 				if(dominated_in_list(e.getEnd().getLabels(), new_label))	// if the new label is dominated by old labels
@@ -71,25 +82,175 @@ public class dijkstra {
 		}
 	}
 
-	private static void report() {
+	/**
+	 * Computes a a* path from the source nodes to the target
+	 * node considering the distances
+	 * 
+	 * @param startnodes	the set of start nodes
+	 * @param target		the target
+	 * @param netw			the network of nodes and edges		
+	 * @return	the path between start nodes and target 
+	 * 			containing nodes
+	 * @see dijkstra
+	 */
+	public static ArrayList<node> a_star(ArrayList<node> startnodes,
+			node target, network netw) {
+		
+		HashMap<node, Double> distlabels = new HashMap<node, Double>();
+		HashMap<node, Double> eucldlabels = new HashMap<node, Double>();
+		ArrayList<node> open = new ArrayList<node>();
+		ArrayList<node> close = new ArrayList<node>();
+		HashMap<node, node> pred = new HashMap<node, node>();
+		
+		// initialize the nodes
+		ArrayList<node> nodes = netw.getNodes();
+		for (node node : nodes){
+			eucldlabels.put(node, node.getCoordinate()
+					.getDistanceTo(target.getCoordinate()));
+			distlabels.put(node, Double.MAX_VALUE);
+			pred.put(node, null);
+			if(startnodes.contains(node)){
+				open.add(node);
+				distlabels.replace(node, 0.0);
+			}
+		}
+		
+		while(!open.isEmpty()){
+			node node = open_min(open, distlabels, eucldlabels);
+			close.add(node);
+			
+			if(node.getId() == target.getId())
+				break;
+			
+			ArrayList<edge> edges = node.getOutgoing_edges();
+			for (edge edge : edges) {
+				node dest = edge.getEnd();
+				if(!open.contains(dest)
+						&& !close.contains(dest)){
+					open.add(dest);
+					distlabels.replace(dest, edge.getDistance() 
+							+ distlabels.get(node));
+					pred.replace(dest, node);
+				}
+				else if(distlabels.get(dest) > edge.getDistance()
+						+ distlabels.get(node)){
+					distlabels.replace(dest, edge.getDistance() 
+							+ distlabels.get(node));
+					pred.replace(dest, node);
+					if(close.contains(dest)){
+						close.remove(dest);
+						open.add(dest);
+					}
+				}
+			}
+		}
+		
+		ArrayList<node> path = new ArrayList<node>();
+		node buf = target;
+		while(!startnodes.contains(buf)){
+			path.add(buf);
+			buf = pred.get(buf);
+		}
+		return path;
+	}
+
+	/**
+	 * From open indices chooses the one with the minimum
+	 * distance in labels
+	 * 
+	 * @param open	the set of open indices
+	 * @param distlabels	the set of labels (distances)
+	 * @param eucldlabels	the set of the distances to target
+	 * @return	the index of the open node with the minimum distance
+	 * @see dijkstra
+	 */
+	private static node open_min(ArrayList<node> open,
+			HashMap<node, Double> distlabels, HashMap<node, Double> eucldlabels) {
+		double min = Integer.MAX_VALUE;
+		node min_node = null;
+		for (node node : open) {
+			if(distlabels.get(node) + eucldlabels.get(node) < min){
+				min = distlabels.get(node) + eucldlabels.get(node);
+				min_node = node;
+			}
+		}
+		open.remove(min_node);
+		return min_node;
+	}
+
+	/**
+	 * Checks the node at the end of edge e and decides if
+	 * it's meaningful to explore the node or note using
+	 * a given heuristic in distance
+	 * 
+	 * @param node	the start node of the edge
+	 * @param path	the path between the start nodes and target
+	 * @param path_len	the length of the path
+	 * @return	a boolean value deciding whether the end node
+	 * 				should be explored or not
+	 * @see dijkstra
+	 */
+	private static boolean check_heuristics(node node, ArrayList<node> path, double path_len) {
+		
+		for (int i = 0; i < path.size(); i++) {
+			if(path.get(i).getCoordinate()
+					.getDistanceTo(node.getCoordinate()) 
+					< compute_threshod(path_len, i, path.size()))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Computes a threshold for checking the heuristics condition
+	 * considering the a* path length and the current step
+	 * of the path and the total size of the path.
+	 * At the end an area will be computed within that area
+	 * the nodes are considered for finding the pareto-optimal
+	 * solutions
+	 * 
+	 * @param path_len	the length of the a* path (distance)	
+	 * @param i			the current position in the path
+	 * @param size		the size of the path (no. of nodes)
+	 * @return	an appropriate threshold
+	 * @see dijkstra
+	 */
+	private static double compute_threshod(double path_len, int i, int size) {
+		return path_len / 4.0;
+	}
+
+	/**
+	 * Provides a reporting mechanism for the modified dijkstra
+	 * function
+	 * 
+	 * @param netw 	network of the nodes
+	 * @param light	defines if a full report is requested or a light report
+	 * @see dijkstra
+	 */
+	private static void report(network netw, boolean light) {
 		if(netw == null)
 			return;
 		if(algorithm_start == null)
 			algorithm_start = LocalTime.now();
 		
-		ArrayList<node> nodes = netw.getNodes();
-		int c = 0, p = 0;
-		for (node node : nodes) {
-			if(node.getLabels().size() > 0){
-				c ++;
-				p += node.getLabels().size();
+		if(!light){
+			ArrayList<node> nodes = netw.getNodes();
+			int c = 0, p = 0;
+			for (node node : nodes) {
+				if(node.getLabels().size() > 0){
+					c ++;
+					p += node.getLabels().size();
+				}
 			}
+			System.out.println(c + " from " + nodes.size() + 
+					" (" + p + " labels added) in " + 
+					Duration.between(algorithm_start,
+							LocalTime.now()).toMillis() + " ms");
 		}
-		
-		System.out.println(c + " from " + nodes.size() + 
-				" (" + p + " labels added) in " + 
-				Duration.between(algorithm_start,
-						LocalTime.now()).toMillis() + " ms");
+		else
+			System.out.println("Time spent: " +  
+					Duration.between(algorithm_start,
+							LocalTime.now()).toMillis() + " ms");
 	}
 
 	/**
@@ -288,9 +449,14 @@ public class dijkstra {
 		double risk = risky_time.getSeconds();
 		
 		// No of total seconds
+		if(row.getVariation() == 0)
+			return 0;
+		
 		double total = row.getVariation() * 60;
 		
-		return risk / total + l.getRisk();
+		double end_risk = risk / total + l.getRisk();
+		
+		return end_risk;
 	}
 
 	/**

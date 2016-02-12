@@ -98,7 +98,7 @@ public class NodeParetoDialog extends javax.swing.JDialog {
     	for (node node : netw.getNodes())
 			node.getLabels().clear();
     	
-    	dijkstra.pareto_opt(startNodes, startTime);
+    	dijkstra.pareto_opt(startNodes, startTime, netw);
         dispose();
     }//GEN-LAST:event_okButtonHandler
     

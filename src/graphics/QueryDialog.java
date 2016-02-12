@@ -117,7 +117,7 @@ public class QueryDialog extends javax.swing.JDialog {
 			node.getLabels().clear();
 		}
     	
-    	dijkstra.pareto_opt(startNodes, startTime);
+    	dijkstra.pareto_opt(startNodes, startTime, netw);
         dispose();
     }//GEN-LAST:event_okButtonHandler
     
