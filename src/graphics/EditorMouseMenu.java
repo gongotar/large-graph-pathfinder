@@ -318,7 +318,7 @@ public class EditorMouseMenu {
         menuBar.add(modeMenu);
         frame.setJMenuBar(menuBar);
         
-        gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode
+        gm.setMode(ModalGraphMouse.Mode.ANNOTATING); // Start off in Transforming mode
         frame.pack();
         frame.setVisible(true);    
     }
