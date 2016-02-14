@@ -88,6 +88,81 @@ public class ReadDatabase_alt {
 	}
 
 	/**
+	 * Returns all of the marked edges in the database
+	 * 
+	 * @param	nodes	the nodes of the graph
+	 * @return	database edges
+	 * @see ReadDatabase_alt
+	 */
+	public ArrayList<edge> getMarkedEdges(ArrayList<node> nodes){
+		ArrayList<edge> edges = new ArrayList<edge>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("MATCH ()-[r:NEWN]->() RETURN distinct r;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Relationship rel = (Relationship) row.get("r");
+				edge edge = new edge();
+				edge.setId((int) rel.getId());
+				edge.setDistance(Double.valueOf
+						(rel.getProperty(DbEdgePropertiesEnum_alt
+								.distance.toString()).toString()));
+				edge.setFeasible(true);
+				int id_n1 = (int) rel.getStartNode().getId();
+				int id_n2 = (int) rel.getEndNode().getId();
+				
+				for (node node : nodes) {
+					if(node.getId() == id_n1){
+						edge.setStart(node);
+						node.getOutgoing_edges().add(edge);
+					}
+					if(node.getId() == id_n2){
+						edge.setEnd(node);
+						node.getIncoming_edges().add(edge);
+					}
+				}
+				
+				edge.setType(edge_type.car);
+				
+				edges.add(edge);
+		    }
+			tx.success();
+		}
+		return edges;
+	}
+	
+	/**
+	 * Returns all of the marked nodes in the database
+	 * 
+	 * @return	database nodes
+	 * @see ReadDatabase_alt
+	 */
+	public ArrayList<node> getMarkedNodes(){
+		ArrayList<node> nodes = new ArrayList<node>();
+		try (Transaction tx = this.getGraphDb().beginTx()){
+			Result result = this.getGraphDb()
+					.execute("match (n)-[r:NEWN]-() return distinct n;");
+			while (result.hasNext()){
+				Map<String, Object> row = result.next();
+				Node n = (Node) row.get("n");
+				node node = new node();
+				node.setId((int)n.getId());
+				coordinate c = new coordinate(Float.valueOf(n.getProperty
+						(DbNodePropertiesEnum_alt.lat.toString()).toString()),
+						Float.valueOf(n.getProperty(DbNodePropertiesEnum_alt.lon.toString()).toString()));
+				node.setCoordinate(c);
+				
+				node.setType(node_type.car_station);
+				
+				nodes.add(node);
+		    }
+			tx.success();
+		}
+		return nodes;
+	}
+
+
+	/**
 	 * Returns all of the edges in the database
 	 * 
 	 * @param	nodes	the nodes of the graph
@@ -98,7 +173,7 @@ public class ReadDatabase_alt {
 		ArrayList<edge> edges = new ArrayList<edge>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
-					.execute("MATCH ()-[r:NEWN]->() RETURN distinct r;");
+					.execute("MATCH (n:loc)-[r]->(m:loc) RETURN distinct r;");
 			while (result.hasNext()){
 				Map<String, Object> row = result.next();
 				Relationship rel = (Relationship) row.get("r");
@@ -141,7 +216,7 @@ public class ReadDatabase_alt {
 		ArrayList<node> nodes = new ArrayList<node>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
-					.execute("match (n)-[r:NEWN]-() return distinct n;");
+					.execute("match (n:loc)-[r]-(m:loc) return distinct n;");
 			while (result.hasNext()){
 				Map<String, Object> row = result.next();
 				Node n = (Node) row.get("n");
@@ -160,7 +235,8 @@ public class ReadDatabase_alt {
 		}
 		return nodes;
 	}
-
+	
+	
 	/**
 	 * @return the path
 	 */

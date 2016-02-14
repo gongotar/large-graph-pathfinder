@@ -17,6 +17,7 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import enums.CoordinateRangeRepresetation;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -62,6 +64,8 @@ public class EditorMouseMenu {
     public static void create_graph_visually(final network netw){
         final JFrame frame = new JFrame("Editing and Mouse Menu Demo");
         GraphFactory.setNetw(netw);
+        final HashMap<CoordinateRangeRepresetation, Double> coordinateRange= 
+        		getNetworkCoordinateRange(netw);
         final DirectedGraph<node, edge> g =
         		new DirectedSparseGraph<node, edge>();
         Layout<node, edge> layout = new StaticLayout<node, edge>(g);
@@ -74,8 +78,8 @@ public class EditorMouseMenu {
 
 					@Override
 					public Point2D transform(node arg0) {
-						int x = graph_viewer.getCoordinate_x(arg0.getCoordinate());
-						int y = graph_viewer.getCoordinate_y(arg0.getCoordinate());
+						int x = graph_viewer.getCoordinate_x(arg0.getCoordinate(), coordinateRange, size);
+						int y = graph_viewer.getCoordinate_y(arg0.getCoordinate(), coordinateRange, size);
 						Point2D.Double point = new Point2D.Double();
 						point.setLocation(x, y);
 						return point;
@@ -119,11 +123,11 @@ public class EditorMouseMenu {
         	 * @see EditorMouseMenu
         	 */
         	private coordinate xyToCoordinate(Point point) {
-				double s = point.y * Math.PI * CoordinateManager.EARTH_DIAMETER;
+				double s = (size.getHeight() - point.y) * Math.PI * CoordinateManager.EARTH_DIAMETER;
 				double m = 2 * size.height * CoordinateManager.latitudeConstant();
-				long latitude = (long)(s / m - 90.0);
-				long longitude = (long)(Float.valueOf(360) 
-						* point.x / size.width - Float.valueOf(180));
+				float latitude = (float)(s / m - 90.0);
+				float longitude = (float)(Float.valueOf(360) 
+						* (double)(size.getWidth() - point.x) / (double)size.width - Float.valueOf(180));
 				coordinate c = new coordinate(latitude, longitude);
 				return c;
 			}
@@ -322,4 +326,33 @@ public class EditorMouseMenu {
         frame.pack();
         frame.setVisible(true);    
     }
+
+	private static HashMap<CoordinateRangeRepresetation, Double> getNetworkCoordinateRange(
+			network netw) {
+		
+		HashMap<CoordinateRangeRepresetation, Double> range
+			= new HashMap<CoordinateRangeRepresetation, Double>();
+		
+		range.put(CoordinateRangeRepresetation.minlat, Double.MAX_VALUE);
+		range.put(CoordinateRangeRepresetation.maxlat, Double.MIN_VALUE);
+		range.put(CoordinateRangeRepresetation.minlong, Double.MAX_VALUE);
+		range.put(CoordinateRangeRepresetation.maxlong, Double.MIN_VALUE);
+		
+		for (node node : netw.getNodes()) {
+			double lat = node.getCoordinate().getLatitude();
+			double longt = node.getCoordinate().getLongitude(); 
+			
+			if(lat > range.get(CoordinateRangeRepresetation.maxlat))
+				range.replace(CoordinateRangeRepresetation.maxlat, lat);
+			else if(lat < range.get(CoordinateRangeRepresetation.minlat))
+				range.replace(CoordinateRangeRepresetation.minlat, lat);
+			
+			if(longt > range.get(CoordinateRangeRepresetation.maxlong))
+				range.replace(CoordinateRangeRepresetation.maxlong, longt);
+			else if(longt < range.get(CoordinateRangeRepresetation.minlong))
+				range.replace(CoordinateRangeRepresetation.minlong, longt);
+		}
+		
+		return range;
+	}
 }

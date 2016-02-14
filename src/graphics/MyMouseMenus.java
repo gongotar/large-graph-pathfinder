@@ -48,10 +48,10 @@ public class MyMouseMenus {
         public EdgeMenu(final JFrame frame) {
             super("Edge Menu");
             // this.frame = frame;
-            this.add(new DeleteEdgeMenuItem<edge>());
-            this.addSeparator();
             this.add(new EdgePropItem(frame));  
             this.add(new EdgeTimeTable(frame));
+            this.addSeparator();
+            this.add(new DeleteEdgeMenuItem<edge>());
         }
         
     }
@@ -99,13 +99,13 @@ public class MyMouseMenus {
 		public VertexMenu(final JFrame frame, network netw) {
             super("Vertex Menu");
             this.netw = netw; 
-            this.add(new DeleteVertexMenuItem<node>());
-            this.addSeparator();
             this.add(new NodePropItem(frame));
             this.add(new NodeLabels(frame));
             this.add(new ParetoOptimals(frame, netw));
             this.add(new SetTarget(frame));
             this.add(new HighlightPath(frame));
+            this.addSeparator();
+            this.add(new DeleteVertexMenuItem<node>());
         }
     }
     

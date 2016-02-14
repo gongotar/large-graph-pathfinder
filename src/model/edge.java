@@ -37,7 +37,7 @@ public class edge {
 	@Override
 	public String toString(){
 		String text = "";
-		text += this.getId();
+		/*text += this.getId();
 		text += ";";
 		text += this.getType().toString();
 		text += ";";
@@ -49,6 +49,8 @@ public class edge {
 			text += " (unfeasible)";
 		//else
 		//	text += ", " + this.getTimetable();
+		 * 
+		 */
 		return text;
 	}
 	

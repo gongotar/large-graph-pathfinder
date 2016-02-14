@@ -217,7 +217,7 @@ public class dijkstra {
 	 * @see dijkstra
 	 */
 	private static double compute_threshod(double path_len, int i, int size) {
-		return path_len / 6.0;
+		return path_len / 7.0;
 	}
 
 	/**

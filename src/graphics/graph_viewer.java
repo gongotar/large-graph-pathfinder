@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
@@ -28,6 +29,7 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.BasicRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
+import enums.CoordinateRangeRepresetation;
 import model.CoordinateManager;
 import model.coordinate;
 import model.edge;
@@ -153,6 +155,7 @@ public class graph_viewer{
 						point.setLocation(x, y);
 						return point;
 					}
+
 				};
 				
 		// Set the transformer of node location to the layout
@@ -241,19 +244,49 @@ public class graph_viewer{
     	return graph;
 	}
 
+	private static int getCoordinate_y(coordinate coordinate) {
+		return getCoordinate_y(coordinate, null, getSize());
+	}
+
+	private static int getCoordinate_x(coordinate coordinate) {
+		return getCoordinate_y(coordinate, null, getSize());
+	}
+	
     /**
      * Gets the coordinate as the input and calculates
      * the y axe of the location on the board
      * 
      * @param coordinate	the node coordination
+     * @param coordinateRange	the range of the lats and longs of the nodes
      * @param Size	the size of the board 
      * @return	the y axe value of the location on the board
      */
-	public static int getCoordinate_y(coordinate coordinate) {
-		Dimension size = getSize();
+	public static int getCoordinate_y(coordinate coordinate, 
+			HashMap<CoordinateRangeRepresetation, Double> coordinateRange, Dimension size){
+		
+		double rel = 1.0;
+		double lat_shift = 0.0;
+		
+		if(coordinateRange != null){
+			double minlat = coordinateRange.get(CoordinateRangeRepresetation.minlat);
+			double maxlat = coordinateRange.get(CoordinateRangeRepresetation.maxlat);
+			double minlong = coordinateRange.get(CoordinateRangeRepresetation.minlong);
+			double maxlong = coordinateRange.get(CoordinateRangeRepresetation.maxlong);
+			double lat_range = maxlat - minlat;
+			double long_range = maxlong - minlong;
+			double lat_rel = (CoordinateManager.MAX_LATITUDE 
+					- CoordinateManager.MIN_LATITUDE) / lat_range;
+			double long_rel = (CoordinateManager.MAX_LONGITUDE 
+					- CoordinateManager.MIN_LONGITUDE) / long_range;
+			rel = Math.min(lat_rel, long_rel);
+			lat_shift = - ((minlat + maxlat) / 2);
+		}
+		
+		float latitude = (float)((coordinate.getLatitude() + lat_shift) * rel);
+		
 		double distance = CoordinateManager.latitudeConstant()
-				* Math.abs(coordinate.getLatitude() + 90);
-		int y = (int)(2 * size.height * distance / (Math.PI * CoordinateManager.EARTH_DIAMETER));
+				* Math.abs(latitude + 90);
+		int y = (int)((double) size.height - 2.0 * (double) size.height * distance / (Math.PI * CoordinateManager.EARTH_DIAMETER));
 		return y;
 	}
 
@@ -262,16 +295,42 @@ public class graph_viewer{
      * the x axe of the location on the board
      * 
      * @param coordinate	the node coordination
+     * @param coordinateRange	the range of the lats and longs of the nodes
      * @param Size 	the size of the board
      * @return	the x axe value of the location on the board
      * @author Masoud Gholami
+	 * @param coordinateRange 
      */
-	public static int getCoordinate_x(coordinate coordinate) {
-		Dimension size = getSize();
-		double distance = CoordinateManager.longitudeConstant(coordinate.getLatitude())
-				* Math.abs(coordinate.getLongitude() + 180);
-		int x = (int)(size.width * distance / (Math.PI * 
-				CoordinateManager.EARTH_DIAMETER * Math.cos(Math.toRadians(coordinate.getLatitude()))));
+	public static int getCoordinate_x(coordinate coordinate,
+			HashMap<CoordinateRangeRepresetation, Double> coordinateRange, Dimension size) {
+		
+		double rel = 1.0;
+		double lat_shift = 0.0;
+		double long_shift = 0.0;
+		
+		if(coordinateRange != null){
+			double minlat = coordinateRange.get(CoordinateRangeRepresetation.minlat);
+			double maxlat = coordinateRange.get(CoordinateRangeRepresetation.maxlat);
+			double minlong = coordinateRange.get(CoordinateRangeRepresetation.minlong);
+			double maxlong = coordinateRange.get(CoordinateRangeRepresetation.maxlong);
+			double lat_range = maxlat - minlat;
+			double long_range = maxlong - minlong;
+			double lat_rel = (CoordinateManager.MAX_LATITUDE 
+					- CoordinateManager.MIN_LATITUDE) / lat_range;
+			double long_rel = (CoordinateManager.MAX_LONGITUDE 
+					- CoordinateManager.MIN_LONGITUDE) / long_range;
+			rel = Math.min(lat_rel, long_rel);
+			lat_shift = - ((minlat + maxlat) / 2);
+			long_shift = - ((minlong + maxlong) / 2);
+		}
+		
+		float latitude = (float)((coordinate.getLatitude() + lat_shift) * rel);
+		float longitude = (float)((coordinate.getLongitude() + long_shift) * rel);
+		
+		double distance = CoordinateManager.longitudeConstant(latitude)
+				* Math.abs(longitude + 180);
+		int x = (int)((double) size.width - (double) size.width * distance / (Math.PI * 
+				CoordinateManager.EARTH_DIAMETER * Math.cos(Math.toRadians(latitude))));
 		return x;
 	}
 

@@ -40,11 +40,10 @@ public class node {
 	@Override
 	public String toString(){
 		String text = "";
-		//if(this.getCity() != null)
-			//text += "City: " + this.getCity().getId() + ", ";
-		text += this.getId();
+		/*text += this.getId();
 		text += ", " + this.getType().toString();
 		text += "@" + this.getCoordinate().toString();
+		*/
 		return text;
 	}
 	
