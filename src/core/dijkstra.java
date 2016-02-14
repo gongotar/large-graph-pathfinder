@@ -48,6 +48,8 @@ public class dijkstra {
 			LocalDateTime starttime, network netw){
 		Queue<label> pq = new LinkedList<label>();
 		
+		report(netw, false);
+		
 		for (node n : startnodes) {
 			label l = new label(n);
 			l.setStart(starttime);
@@ -67,7 +69,6 @@ public class dijkstra {
 		while(!pq.isEmpty()){
 			label l = pq.poll();
 			node node = l.getNode();
-			report(netw, false);
 			for (edge e : node.getOutgoing_edges()) {
 				if(!check_heuristics(e.getEnd(), a_star_path, path_len))		// better performance by checking only some nodes
 					continue;
@@ -80,6 +81,7 @@ public class dijkstra {
 				remove_dominated_labels(e.getEnd(), new_label);
 			}
 		}
+		report(netw, false);
 		algorithm_start = null;
 	}
 
@@ -231,8 +233,10 @@ public class dijkstra {
 	private static void report(network netw, boolean light) {
 		if(netw == null)
 			return;
-		if(algorithm_start == null)
+		if(algorithm_start == null){
 			algorithm_start = LocalTime.now();
+			return;
+		}
 		
 		if(!light){
 			ArrayList<node> nodes = netw.getNodes();
