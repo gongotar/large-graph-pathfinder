@@ -47,7 +47,7 @@ public class dijkstra {
 	public static void pareto_opt(ArrayList<node> startnodes,
 			LocalDateTime starttime, network netw){
 		Queue<label> pq = new LinkedList<label>();
-		
+
 		report(netw, false);
 		
 		for (node n : startnodes) {
@@ -57,15 +57,18 @@ public class dijkstra {
 			pq.add(l);
 		}
 		
-		ArrayList<node> a_star_path = 
-				a_star(startnodes, target, netw);
-		
+		ArrayList<node> a_star_path = null;
 		double path_len = 0;
-		for (int i = 0; i < a_star_path.size() - 1; i++)
-			path_len += a_star_path.get(i).getCoordinate()
-					.getDistanceTo(a_star_path.get(i + 1).getCoordinate());
 		
-		
+		if(target != null){
+			a_star_path = 
+					a_star(startnodes, target, netw);
+			
+			for (int i = 0; i < a_star_path.size() - 1; i++)
+				path_len += a_star_path.get(i).getCoordinate()
+						.getDistanceTo(a_star_path.get(i + 1).getCoordinate());
+		}
+
 		while(!pq.isEmpty()){
 			label l = pq.poll();
 			node node = l.getNode();
@@ -81,6 +84,7 @@ public class dijkstra {
 				remove_dominated_labels(e.getEnd(), new_label);
 			}
 		}
+		
 		report(netw, false);
 		algorithm_start = null;
 	}
@@ -194,6 +198,9 @@ public class dijkstra {
 	 * @see dijkstra
 	 */
 	private static boolean check_heuristics(node node, ArrayList<node> path, double path_len) {
+		
+		if(path == null)
+			return true;
 		
 		for (int i = 0; i < path.size(); i++) {
 			if(path.get(i).getCoordinate()

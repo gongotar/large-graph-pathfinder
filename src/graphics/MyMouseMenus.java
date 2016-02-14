@@ -99,7 +99,7 @@ public class MyMouseMenus {
             this.add(new NodeLabels(frame));
             this.add(new ParetoOptimals(frame, netw));
             this.add(new SetTarget(frame));
-            this.add(new HighlightPath(frame));
+            // this.add(new HighlightPath(frame));
             this.addSeparator();
             this.add(new DeleteVertexMenuItem<node>());
         }

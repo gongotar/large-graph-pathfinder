@@ -312,9 +312,25 @@ public class EditorMouseMenu {
 			}
 		});
 
+        JMenuItem item4 = new JMenuItem("Reset the Target");
+        item4.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for (node node : netw.getNodes())
+					node.getLabels().clear();
+				((NodeColor)vv.getRenderContext()
+						.getVertexFillPaintTransformer()).path_nodes.clear();
+				((EdgeColor)vv.getRenderContext()
+						.getEdgeFillPaintTransformer()).path_edges.clear();
+				dijkstra.target = null;
+			}
+		});
+        
         modeMenu.add(item1);
         modeMenu.add(item2);
         modeMenu.add(item3);
+		modeMenu.add(item4);
         
         modeMenu.setText("Mouse Mode");
         modeMenu.setIcon(null); // I'm using this in a main menu
