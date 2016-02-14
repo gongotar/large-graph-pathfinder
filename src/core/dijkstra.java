@@ -80,6 +80,7 @@ public class dijkstra {
 				remove_dominated_labels(e.getEnd(), new_label);
 			}
 		}
+		algorithm_start = null;
 	}
 
 	/**
@@ -216,7 +217,7 @@ public class dijkstra {
 	 * @see dijkstra
 	 */
 	private static double compute_threshod(double path_len, int i, int size) {
-		return path_len / 4.0;
+		return path_len / 6.0;
 	}
 
 	/**
@@ -421,12 +422,15 @@ public class dijkstra {
 			return 0;
 		
 		// get the arriving and departure time
-		LocalTime arrived_at = LocalTime.from(l.getStart()).plus(l.getDuration());
+		LocalTime arrived_at = LocalTime.from(l.getEnd());
 		LocalTime departure_at = row.getStart_time();
 		
 		// get the last line used to reach here
 		int size = l.getPath().size() - 1;
 		timetable_row last_row = get_label_row(l, size);
+		if(last_row.getVariation() == 0)
+			return 0;
+		
 		double arrive_risk = 0;
 		// get the info about the variation of the last line
 		if(! l.getPath().get(size)
@@ -449,10 +453,7 @@ public class dijkstra {
 		double risk = risky_time.getSeconds();
 		
 		// No of total seconds
-		if(row.getVariation() == 0)
-			return 0;
-		
-		double total = row.getVariation() * 60;
+		double total = last_row.getVariation() * 60;
 		
 		double end_risk = risk / total + l.getRisk();
 		
