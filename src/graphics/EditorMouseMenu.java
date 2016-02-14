@@ -127,7 +127,7 @@ public class EditorMouseMenu {
 				double m = 2 * size.height * CoordinateManager.latitudeConstant();
 				float latitude = (float)(s / m - 90.0);
 				float longitude = (float)(Float.valueOf(360) 
-						* (double)(size.getWidth() - point.x) / (double)size.width - Float.valueOf(180));
+						* (double)(point.x) / (double)size.width - Float.valueOf(180));
 				coordinate c = new coordinate(latitude, longitude);
 				return c;
 			}
@@ -155,23 +155,23 @@ public class EditorMouseMenu {
 			}
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				Object obj = e.getSource();
-            	@SuppressWarnings("unchecked")
-        		final VisualizationViewer<node, edge> vv = (VisualizationViewer<node, edge>) obj;
-                		
-                Point2D p = e.getPoint();
-                
-                GraphElementAccessor<node, edge> pickSupport = vv.getPickSupport();
-                if(pickSupport != null) {
-                    node v = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
-                    if(v != null) {
-                    	if(mode.equals(ModalGraphMouse.Mode.PICKING)){
-                    		coordinate c = xyToCoordinate(e.getPoint());
-                    		v.setCoordinate(c);
-                    	}
-                    }
-                }
-				super.mouseDragged(e);
+				if(mode.equals(ModalGraphMouse.Mode.PICKING)){
+					Object obj = e.getSource();
+	            	@SuppressWarnings("unchecked")
+	        		final VisualizationViewer<node, edge> vv = (VisualizationViewer<node, edge>) obj;
+	                		
+	                Point2D p = e.getPoint();
+	                
+	                GraphElementAccessor<node, edge> pickSupport = vv.getPickSupport();
+	                if(pickSupport != null) {
+	                    node v = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
+	                    if(v != null) {
+	                    		coordinate c = xyToCoordinate(e.getPoint());
+	                    		v.setCoordinate(c);                    	
+	                    }
+	                }
+					super.mouseDragged(e);
+				}
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {

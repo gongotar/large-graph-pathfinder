@@ -329,7 +329,7 @@ public class graph_viewer{
 		
 		double distance = CoordinateManager.longitudeConstant(latitude)
 				* Math.abs(longitude + 180);
-		int x = (int)((double) size.width - (double) size.width * distance / (Math.PI * 
+		int x = (int)((double) size.width * distance / (Math.PI * 
 				CoordinateManager.EARTH_DIAMETER * Math.cos(Math.toRadians(latitude))));
 		return x;
 	}
