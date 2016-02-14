@@ -11,8 +11,6 @@ package graphics;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -21,8 +19,6 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
-import org.apache.commons.collections15.Transformer;
 
 import core.dijkstra;
 import model.connection;
@@ -263,6 +259,11 @@ public class MyMouseMenus {
                     NodeParetoDialog dialog = new NodeParetoDialog(frame, v, netw);
                     dialog.setLocation((int)point.getX()+ frame.getX(), (int)point.getY()+ frame.getY());
                     dialog.setVisible(true);
+                    /* ((EdgeColor)visComp.getRenderContext()
+                    		.getEdgeFillPaintTransformer()).path_edges.clear();
+                    ((NodeColor)visComp.getRenderContext()
+                    		.getVertexFillPaintTransformer()).path_nodes.clear();
+                    */
                 }
                 
             });
@@ -294,24 +295,23 @@ public class MyMouseMenus {
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                 	ArrayList<label> labels = v.getLabels();
-                	final ArrayList<edge> edges = new ArrayList<edge>();
+                	ArrayList<edge> edges = new ArrayList<edge>();
+                	ArrayList<node> nodes = new ArrayList<node>();
                 	for (label label : labels) {
+                		edge edge = null;
 						for (connection<edge, Integer> conn : label.getPath()) {
-							edges.add(conn.getEdge());
+							edge = conn.getEdge();
+							edges.add(edge);
+							nodes.add(edge.getStart());
 						}
+						nodes.add(edge.getEnd());
 					}
-                	Transformer<edge, Paint> edges_color =
-                			new Transformer<edge, Paint>() {
-								@Override
-								public Paint transform(edge arg0) {
-									for (edge edge : edges) {
-										if(arg0.getId() == edge.getId())
-											return Color.YELLOW;
-									}
-									return null;
-								}
-							};
-					visComp.getRenderContext().setEdgeFillPaintTransformer(edges_color);
+                	
+					NodeColor nodes_color = 
+							(NodeColor)visComp.getRenderContext().getVertexFillPaintTransformer();
+					nodes_color.path_nodes = nodes;	
+					EdgeColor edge_color = (EdgeColor) visComp.getRenderContext().getEdgeFillPaintTransformer();
+					edge_color.path_edges = edges;
                 }
                 
             });

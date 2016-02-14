@@ -231,14 +231,16 @@ public class dijkstra {
 	 * @see dijkstra
 	 */
 	private static void report(network netw, boolean light) {
-		if(netw == null)
-			return;
+		LocalTime now = LocalTime.now();
+
 		if(algorithm_start == null){
 			algorithm_start = LocalTime.now();
 			return;
 		}
 		
 		if(!light){
+			if(netw == null)
+				return;
 			ArrayList<node> nodes = netw.getNodes();
 			int c = 0, p = 0;
 			for (node node : nodes) {
@@ -250,12 +252,12 @@ public class dijkstra {
 			System.out.println(c + " from " + nodes.size() + 
 					" (" + p + " labels added) in " + 
 					Duration.between(algorithm_start,
-							LocalTime.now()).toMillis() + " ms");
+							now).toMillis() + " ms");
 		}
 		else
 			System.out.println("Time spent: " +  
 					Duration.between(algorithm_start,
-							LocalTime.now()).toMillis() + " ms");
+							now).toMillis() + " ms");
 	}
 
 	/**
@@ -335,25 +337,13 @@ public class dijkstra {
 			LocalDateTime starttime) {
 		
 		label new_label = new label();				// create the label
-		Integer id = find_edge_id(l, e);
-		connection<edge, Integer> conn = new connection<edge, Integer>(e, id);
+		timetable_row row = find_edge_id(l, e);
+		connection<edge, Integer> conn = new connection<edge, Integer>(e, row.getId());
 		ArrayList<connection<edge, Integer>> extended_path = 
 				new ArrayList<connection<edge,Integer>>(l.getPath());
 		extended_path.add(conn);
 		new_label.setPath(extended_path);			// set the new path
-		
-		ArrayList<timetable_row> timetable = e.getTimetable();
-		
-		int index = 0;
-		for (int i = 0; i < timetable.size(); i++){
-			if(timetable.get(i).getId() == id){
-				index = i;
-				break;
-			}
-		}
-		
-		timetable_row row = timetable.get(index);
-		
+
 		new_label.setStart(starttime);
 		
 		LocalDateTime new_end = compute_new_end(l, row, e.getType());
@@ -571,14 +561,14 @@ public class dijkstra {
 	 * 
 	 * @param	l	the label containing the path information
 	 * @param	e	the new edge with a timetable
-	 * @return	the id of the right timetable row
+	 * @return	the right timetable row
 	 * @see dijkstra
 	 */
-	private static Integer find_edge_id(label l, edge e) {
+	private static timetable_row find_edge_id(label l, edge e) {
 		long minimum_waiting_minutes = 1;						// minimum waiting time
 		
 		if(e.getType().equals(edge_type.walk))					// if walking edge then return 0
-			return 0;
+			return e.getTimetable().get(0);
 		int size = l.getPath().size();
 		LocalTime arrived_at;
 		if(size != 0){
@@ -590,28 +580,27 @@ public class dijkstra {
 		ArrayList<timetable_row> timetable = 					// get the timetable of the new edge
 				new ArrayList<timetable_row>(e.getTimetable());
 		
-		int index = 0, min_index = -1;
+		timetable_row final_row = null;
 		Duration waiting_time = Duration.between(arrived_at, LocalDateTime.MAX);
 		for (timetable_row row : timetable) {					// finding the minimum waiting time
 			if(arrived_at.isBefore(row.getStart_time().minusMinutes(minimum_waiting_minutes))
 					&& Duration.between(arrived_at, row.getStart_time()).getSeconds() < waiting_time.getSeconds()){
 				waiting_time = Duration.between(arrived_at, row.getStart_time());
-				min_index = index;
+				final_row = row;
 			}
-			index++;
 		}
 		// if late in the night, go with the first departure next day
-		if(min_index == -1){
+		if(final_row == null){
 			LocalTime first_departure = LocalTime.MAX;
 			for (int i = 0; i < timetable.size(); i++) {
 				if(first_departure.isAfter(timetable.get(i).getStart_time())){
-					min_index = i;
+					final_row = timetable.get(i);
 					first_departure = timetable.get(i).getStart_time();
 				}
 			}
 		}
 			 
-		return min_index;
+		return final_row;
 	}
 	
 }

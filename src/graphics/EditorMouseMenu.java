@@ -19,14 +19,13 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import enums.CoordinateRangeRepresetation;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JFrame;
@@ -37,9 +36,12 @@ import javax.swing.JPopupMenu;
 
 import org.apache.commons.collections15.Transformer;
 
+import core.dijkstra;
 import model.CoordinateManager;
+import model.connection;
 import model.coordinate;
 import model.edge;
+import model.label;
 import model.network;
 import model.node;
 
@@ -104,11 +106,20 @@ public class EditorMouseMenu {
 				
 		// Set the transformer of node location to the layout
 		layout.setInitializer(node_location);
-                
+               
         vv.setPreferredSize(size);
         // Show vertex and edge labels
         vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<node>());
         vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<edge>());
+        
+        // Set the color of the nodes
+        NodeColor nc = new NodeColor();
+		vv.getRenderContext().setVertexFillPaintTransformer(nc);
+		
+		// Set the color of the edges
+		EdgeColor ec = new EdgeColor();
+		vv.getRenderContext().setEdgeFillPaintTransformer(ec);
+        
         // Create a graph mouse and add it to the visualization viewer
         EditingModalGraphMouse<node, edge> gm = new EditingModalGraphMouse<node, edge>(vv.getRenderContext(), 
                  GraphFactory.nodeFactory.getInstance(),
@@ -181,20 +192,28 @@ public class EditorMouseMenu {
 				
 				for (edge edge : netw.getEdges())
 					g.addEdge(edge, edge.getStart(), edge.getEnd());
-				
-				Transformer<node, Paint> node_color = new Transformer<node, Paint>() {
-					
-					@Override
-					public Paint transform(node arg0) {
-						if(arg0.getLabels().size() > 0)
-							return Color.YELLOW;
-						else
-							return Color.RED;
+							
+				node target = dijkstra.target;
+				if(target != null){
+					ArrayList<label> labels = target.getLabels();
+					ArrayList<edge> edges = new ArrayList<edge>();
+	            	ArrayList<node> nodes = new ArrayList<node>();
+	            	for (label label : labels) {
+	            		edge edge = null;
+						for (connection<edge, Integer> conn : label.getPath()) {
+							edge = conn.getEdge();
+							edges.add(edge);
+							nodes.add(edge.getStart());
+						}
+						nodes.add(edge.getEnd());
 					}
-				};
-				
-				vv.getRenderContext().setVertexFillPaintTransformer(node_color);
-				
+	            	
+					NodeColor nodes_color = 
+							(NodeColor)vv.getRenderContext().getVertexFillPaintTransformer();
+					nodes_color.path_nodes = nodes;	
+					EdgeColor edge_color = (EdgeColor) vv.getRenderContext().getEdgeFillPaintTransformer();
+					edge_color.path_edges = edges;
+				}	
 				frame.repaint();
 				super.mouseEntered(e);
 			}
@@ -255,6 +274,11 @@ public class EditorMouseMenu {
 				dialog.setLocation(frame.getLocation().x + frame.getWidth() / 2
 						, frame.getLocation().y + frame.getHeight() / 2);
 	            dialog.setVisible(true);
+	            /* ((EdgeColor)vv.getRenderContext()
+                		.getEdgeFillPaintTransformer()).path_edges.clear();
+                ((NodeColor)vv.getRenderContext()
+                		.getVertexFillPaintTransformer()).path_nodes.clear();
+                */
 			}
 		});
         
@@ -288,32 +312,9 @@ public class EditorMouseMenu {
 			}
 		});
 
-        JMenuItem item4 = new JMenuItem("Highight checked nodes");
-        item4.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				Transformer<node, Paint> node_color = new Transformer<node, Paint>() {
-					
-					@Override
-					public Paint transform(node arg0) {
-						if(arg0.getLabels().size() > 0)
-							return Color.YELLOW;
-						else
-							return Color.RED;
-					}
-				};
-				
-				vv.getRenderContext().setVertexFillPaintTransformer(node_color);
-			}
-		});
-
-        
         modeMenu.add(item1);
         modeMenu.add(item2);
         modeMenu.add(item3);
-        modeMenu.add(item4);
         
         modeMenu.setText("Mouse Mode");
         modeMenu.setIcon(null); // I'm using this in a main menu

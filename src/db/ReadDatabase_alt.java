@@ -173,7 +173,8 @@ public class ReadDatabase_alt {
 		ArrayList<edge> edges = new ArrayList<edge>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
-					.execute("MATCH (n:loc)-[r]->(m:loc) RETURN distinct r;");
+					.execute("MATCH (n:loc)-[r]->(m:loc) where type(r) <> \"NEWN\""
+							+ " RETURN distinct r;");
 			while (result.hasNext()){
 				Map<String, Object> row = result.next();
 				Relationship rel = (Relationship) row.get("r");
@@ -216,7 +217,8 @@ public class ReadDatabase_alt {
 		ArrayList<node> nodes = new ArrayList<node>();
 		try (Transaction tx = this.getGraphDb().beginTx()){
 			Result result = this.getGraphDb()
-					.execute("match (n:loc)-[r]-(m:loc) return distinct n;");
+					.execute("match (n:loc)-[r]-(m:loc) where type(r) <> \"NEWN\" "
+							+ "return distinct n;");
 			while (result.hasNext()){
 				Map<String, Object> row = result.next();
 				Node n = (Node) row.get("n");
