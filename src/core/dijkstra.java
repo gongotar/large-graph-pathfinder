@@ -422,15 +422,15 @@ public class dijkstra {
 		if(edge_type.equals(enums.edge_type.walk))
 			return 0;
 		
-		// get the arriving and departure time
-		LocalTime arrived_at = LocalTime.from(l.getEnd());
-		LocalTime departure_at = row.getStart_time();
-		
 		// get the last line used to reach here
 		int size = l.getPath().size() - 1;
 		timetable_row last_row = get_label_row(l, size);
 		if(last_row.getVariation() == 0)
 			return 0;
+		
+		// get the arriving and departure time
+		LocalTime arrived_at = LocalTime.from(l.getEnd());
+		LocalTime departure_at = row.getStart_time();
 		
 		double arrive_risk = 0;
 		// get the info about the variation of the last line
@@ -447,18 +447,20 @@ public class dijkstra {
 		// if the departure time is before the late arrive then
 		// we have a risky change here
 		Duration risky_time = Duration.ZERO;
-		if(departure_at.isBefore(late_arrive))
+		if(departure_at.isBefore(late_arrive) && departure_at.isAfter(arrived_at))
 			risky_time = Duration.between(departure_at, late_arrive);
 		
 		// No. of risky time seconds
 		double risk = risky_time.getSeconds();
 		
 		// No of total seconds
-		double total = last_row.getVariation() * 60;
+		double total = last_row.getVariation() * 60.0;
 		
-		double end_risk = risk / total + l.getRisk();
+		double success_prob = 1.0 - risk / total;
 		
-		return end_risk;
+		double total_success = success_prob * (1.0 - l.getRisk()); 
+		
+		return 1.0 - total_success;
 	}
 
 	/**
