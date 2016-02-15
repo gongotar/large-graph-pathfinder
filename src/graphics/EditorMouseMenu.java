@@ -13,14 +13,20 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationServer.Paintable;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import enums.CoordinateBox;
 import enums.CoordinateRangeRepresetation;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -54,6 +60,7 @@ import model.node;
 public class EditorMouseMenu {
     
 	private static Dimension size = new Dimension(800, 550);
+	private static boolean Highlight_area = false;
 	
     /**
      * @param args the command line arguments
@@ -65,6 +72,7 @@ public class EditorMouseMenu {
     
     public static void create_graph_visually(final network netw){
         final JFrame frame = new JFrame("Editing and Mouse Menu Demo");
+        
         GraphFactory.setNetw(netw);
         final HashMap<CoordinateRangeRepresetation, Double> coordinateRange= 
         		getNetworkCoordinateRange(netw);
@@ -74,6 +82,8 @@ public class EditorMouseMenu {
         layout.setSize(size);
         final VisualizationViewer<node, edge> vv = 
                 new VisualizationViewer<node, edge>(layout);
+                
+        GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(vv);
                 
         Transformer<node, Point2D> node_location = 
 				new Transformer<node, Point2D>() {
@@ -120,6 +130,47 @@ public class EditorMouseMenu {
 		EdgeColor ec = new EdgeColor();
 		vv.getRenderContext().setEdgeFillPaintTransformer(ec);
         
+		
+		Paintable paintable = new Paintable() {
+
+			@Override
+			public boolean useTransform() {
+				return true;
+			}
+			
+			@Override
+			public void paint(Graphics g) {
+				g.clearRect(0, 0, size.width, size.height);
+				if(!Highlight_area || dijkstra.boxes == null)
+					return;
+				
+				Color myColor = new Color(0, 0, 96, 8);
+				g.setColor(myColor);
+				for (HashMap<CoordinateBox, coordinate> box : dijkstra.boxes) {
+					int[] xPoly = new int[4];
+					int[] yPoly = new int[4];
+					xPoly[0] = graph_viewer.getCoordinate_x(box.get(CoordinateBox.NE)
+							, coordinateRange, size);
+					yPoly[0] = graph_viewer.getCoordinate_y(box.get(CoordinateBox.NE)
+							, coordinateRange, size);
+					xPoly[1] = graph_viewer.getCoordinate_x(box.get(CoordinateBox.NW)
+							, coordinateRange, size);
+					yPoly[1] = graph_viewer.getCoordinate_y(box.get(CoordinateBox.NW)
+							, coordinateRange, size);
+					xPoly[2] = graph_viewer.getCoordinate_x(box.get(CoordinateBox.SW)
+							, coordinateRange, size);
+					yPoly[2] = graph_viewer.getCoordinate_y(box.get(CoordinateBox.SW)
+							, coordinateRange, size);
+					xPoly[3] = graph_viewer.getCoordinate_x(box.get(CoordinateBox.SE)
+							, coordinateRange, size);
+					yPoly[3] = graph_viewer.getCoordinate_y(box.get(CoordinateBox.SE)
+							, coordinateRange, size);
+					Polygon poly = new Polygon(xPoly, yPoly, xPoly.length);
+					g.fillPolygon(poly);
+				}
+			}
+		};
+		vv.addPreRenderPaintable(paintable);
         // Create a graph mouse and add it to the visualization viewer
         EditingModalGraphMouse<node, edge> gm = new EditingModalGraphMouse<node, edge>(vv.getRenderContext(), 
                  GraphFactory.nodeFactory.getInstance(),
@@ -258,7 +309,7 @@ public class EditorMouseMenu {
         
         //JFrame frame = new JFrame("Editing and Mouse Menu Demo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(vv);
+        frame.getContentPane().add(scrollPane);
         frame.setResizable(false);
         
         // Let's add a menu for changing mouse modes
@@ -312,8 +363,17 @@ public class EditorMouseMenu {
 			}
 		});
 
-        JMenuItem item4 = new JMenuItem("Reset the Target");
+        JMenuItem item4 = new JMenuItem("Show/Hide search area highlight");
         item4.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Highlight_area = ! Highlight_area;
+			}
+		});
+        
+        JMenuItem item5 = new JMenuItem("Reset the Target");
+        item5.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -323,6 +383,7 @@ public class EditorMouseMenu {
 						.getVertexFillPaintTransformer()).path_nodes.clear();
 				((EdgeColor)vv.getRenderContext()
 						.getEdgeFillPaintTransformer()).path_edges.clear();
+				dijkstra.boxes = null;
 				dijkstra.target = null;
 			}
 		});
@@ -330,7 +391,8 @@ public class EditorMouseMenu {
         modeMenu.add(item1);
         modeMenu.add(item2);
         modeMenu.add(item3);
-		modeMenu.add(item4);
+        modeMenu.add(item4);
+		modeMenu.add(item5);
         
         modeMenu.setText("Mouse Mode");
         modeMenu.setIcon(null); // I'm using this in a main menu

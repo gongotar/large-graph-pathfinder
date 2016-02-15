@@ -32,8 +32,9 @@ public class dijkstra {
 
 	private static LocalTime algorithm_start = null;
 	public static node target = null;
-	public static double density_computation_box_node_no = 3.0;
-	public static double considered_node_no_in_area = 15.0;
+	public static double density_computation_box_node_no = 10.0;
+	public static double considered_node_no_in_area = 100.0;
+	public static ArrayList<HashMap<CoordinateBox, coordinate>> boxes = null;
 	
 	public static void main(String args[]){
 		
@@ -65,7 +66,6 @@ public class dijkstra {
 		
 		ArrayList<node> a_star_path = null;
 		double path_len = 0;
-		ArrayList<HashMap<CoordinateBox, coordinate>> boxes = null;
 		
 		if(target != null){
 			a_star_path = 
@@ -204,7 +204,7 @@ public class dijkstra {
 		else if(NE.getLongitude() < NW.getLongitude()
 				&& NE.getLongitude() >= lon)
 			lon_ok = true;
-		else if(NE.getLongitude() > NW.getLongitude()
+		else if(NE.getLongitude() < NW.getLongitude()
 				&& NW.getLongitude() <= lon)
 			lon_ok = true;
 		else
@@ -333,6 +333,8 @@ public class dijkstra {
 	 */
 	private static boolean check_heuristics(node node, 
 			ArrayList<HashMap<CoordinateBox, coordinate>> boxes) {
+		if(boxes == null)
+			return true;
 		
 		for (HashMap<CoordinateBox, coordinate> box : boxes)
 			if(isInBox(box, node))
