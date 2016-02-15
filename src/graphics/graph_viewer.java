@@ -44,7 +44,7 @@ public class graph_viewer{
 
 	private static network netw;
 	private static Dimension Size = new Dimension(700, 500);
-	private static int border = 20;
+	private static double border = 20;
 	
 	public static void main(String[] args){
 		// network netw = test_data_generation.generate_netw(7);
@@ -286,7 +286,8 @@ public class graph_viewer{
 		
 		double distance = CoordinateManager.latitudeConstant()
 				* Math.abs(latitude + 90);
-		int y = (int)((double) size.height - 2.0 * (double) size.height * distance / (Math.PI * CoordinateManager.EARTH_DIAMETER));
+		int y = (int)((double) size.height - border - 2.0 * (double) (size.height - 2 * border) * distance / 
+				(Math.PI * CoordinateManager.EARTH_DIAMETER));
 		return y;
 	}
 
@@ -307,6 +308,8 @@ public class graph_viewer{
 		double rel = 1.0;
 		double lat_shift = 0.0;
 		double long_shift = 0.0;
+		
+		double wide_border = border * (double)size.width / (double)size.getHeight();
 		
 		if(coordinateRange != null){
 			double minlat = coordinateRange.get(CoordinateRangeRepresetation.minlat);
@@ -329,7 +332,7 @@ public class graph_viewer{
 		
 		double distance = CoordinateManager.longitudeConstant(latitude)
 				* Math.abs(longitude + 180);
-		int x = (int)((double) size.width * distance / (Math.PI * 
+		int x = (int)(wide_border + (double) (size.width - 2 * wide_border) * distance / (Math.PI * 
 				CoordinateManager.EARTH_DIAMETER * Math.cos(Math.toRadians(latitude))));
 		return x;
 	}
@@ -369,22 +372,22 @@ public class graph_viewer{
 	 * @see graph_viewer
 	 */
 	private static Dimension getFrameSize() {
-		Dimension fd =  new Dimension(getSize().width + getBorder(),
-				getSize().height + getBorder());
+		Dimension fd =  new Dimension(getSize().width + (int)getBorder(),
+				getSize().height + (int)getBorder());
 		return fd;
 	}
 
 	/**
 	 * @return the border
 	 */
-	public static int getBorder() {
+	public static double getBorder() {
 		return border;
 	}
 
 	/**
 	 * @param border the border to set
 	 */
-	public static void setBorder(int border) {
+	public static void setBorder(double border) {
 		graph_viewer.border = border;
 	}
 }

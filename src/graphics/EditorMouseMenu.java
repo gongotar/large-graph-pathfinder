@@ -53,7 +53,7 @@ import model.node;
  */
 public class EditorMouseMenu {
     
-	private static Dimension size = new Dimension(800, 500);
+	private static Dimension size = new Dimension(800, 550);
 	
     /**
      * @param args the command line arguments

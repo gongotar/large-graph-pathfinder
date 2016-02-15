@@ -6,6 +6,7 @@ package test_data;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -56,13 +57,17 @@ public class DbTestData {
 	 * @see DbTestData
 	 */
 	private static void traverseEulerianPath(network netw) {
+		ArrayList<node> accessible_nodes = new ArrayList<node>();
+		ArrayList<edge> accessible_edges = new ArrayList<edge>();
 		node node = netw.getNodes().get(0);
 		Queue<node> forward = new LinkedList<node>();
 		edge edge;
 		edge last_edge = null;
 		int line = -1;
 		while(unvisitedEdge(node) != null){
+			accessible_nodes.add(node);
 			edge = unvisitedEdge(node);
+			accessible_edges.add(edge);
 			line = createTimeTable(edge, last_edge, line);
 			forward.add(node);
 			node = edge.getEnd();
@@ -74,12 +79,25 @@ public class DbTestData {
 			last_edge = null;
 			while(unvisitedEdge(n) != null){
 				edge = unvisitedEdge(n);
+				accessible_edges.add(edge);
 				line = createTimeTable(edge, last_edge, line);
 				forward.add(n);
 				n = edge.getEnd();
+				accessible_nodes.add(n);
 				last_edge = edge;
 			}
 		}
+		
+		Iterator<node> i_nodes = netw.getNodes().iterator();
+		while(i_nodes.hasNext())
+			if(!accessible_nodes.contains(i_nodes.next()))
+				i_nodes.remove();
+		
+		Iterator<edge> i_edges = netw.getEdges().iterator();
+		while(i_edges.hasNext())
+			if(!accessible_edges.contains(i_edges.next()))
+				i_edges.remove();
+		
 	}
 
 	/**
