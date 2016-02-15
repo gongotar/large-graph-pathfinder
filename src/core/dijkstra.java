@@ -125,12 +125,14 @@ public class dijkstra {
 				new ArrayList<HashMap<CoordinateBox,coordinate>>();
 		
 		for (int i = 0; i < a_star_path.size(); i++) {
-			double needed_area = 1.0 / density.get(i)
-					* considered_node_no_in_area;
+			double needed_area = 0;
+			if(density.get(i) != 0)
+				needed_area = 1.0 / density.get(i)
+						* considered_node_no_in_area;
 			int size = (int)(Math.sqrt(needed_area) * 1000.0 / 2);
 			HashMap<CoordinateBox, coordinate> box = 
-					CoordinateManager.getBoundingBox(a_star_path.get(i).getLat(),
-					a_star_path.get(i).getLon(), size);
+						CoordinateManager.getBoundingBox(a_star_path.get(i).getLat(),
+						a_star_path.get(i).getLon(), size);
 			boxes.add(box);
 		}
 		
@@ -187,6 +189,7 @@ public class dijkstra {
 	 */
 	private static boolean isInBox(HashMap<CoordinateBox, coordinate> box,
 			node n) {
+		
 		coordinate NE = box.get(CoordinateBox.NE);
 		coordinate NW = box.get(CoordinateBox.NW);
 		
