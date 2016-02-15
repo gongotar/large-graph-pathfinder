@@ -3,6 +3,8 @@
  */
 package model;
 
+import enums.CoordinateBox;
+
 /**
  * @author Masoud Gholami
  *
@@ -305,7 +307,7 @@ public class CoordinateManager {
 	   *
 	   * @return          a hashMap representing the bounding box (NE,SE,SW,NW)
 	   */
-	  public static java.util.HashMap<String, coordinate> getBoundingBox(float latitude, float longitude, int distance) {
+	  public static java.util.HashMap<CoordinateBox, coordinate> getBoundingBox(float latitude, float longitude, int distance) {
 	  
 	    // check on the parameters
 	    if(isValidLatitude(latitude) == false || isValidLongitude(longitude) == false || distance <= 0) {
@@ -313,7 +315,7 @@ public class CoordinateManager {
 	    }
 	    
 	    // declare helper variables
-	    java.util.HashMap<String, coordinate> boundingBox = new java.util.HashMap<String, coordinate>();
+	    java.util.HashMap<CoordinateBox, coordinate> boundingBox = new java.util.HashMap<CoordinateBox, coordinate>();
 	    
 	    // calculate the coordinates
 	    coordinate north = addDistanceNorth(latitude, longitude, distance);
@@ -322,10 +324,10 @@ public class CoordinateManager {
 	    coordinate west  = addDistanceWest(latitude, longitude, distance);
 	    
 	    // build the bounding box object
-	    boundingBox.put("NE", new coordinate(north.getLatitude(), east.getLongitude()));
-	    boundingBox.put("SE", new coordinate(south.getLatitude(), east.getLongitude()));
-	    boundingBox.put("SW", new coordinate(south.getLatitude(), west.getLongitude()));
-	    boundingBox.put("NW", new coordinate(north.getLatitude(), west.getLongitude()));
+	    boundingBox.put(CoordinateBox.NE, new coordinate(north.getLatitude(), east.getLongitude()));
+	    boundingBox.put(CoordinateBox.SE, new coordinate(south.getLatitude(), east.getLongitude()));
+	    boundingBox.put(CoordinateBox.SW, new coordinate(south.getLatitude(), west.getLongitude()));
+	    boundingBox.put(CoordinateBox.NW, new coordinate(north.getLatitude(), west.getLongitude()));
 	    
 	    // return the bounding box object
 	    return boundingBox;  

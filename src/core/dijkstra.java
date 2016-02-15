@@ -3,12 +3,16 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import enums.CoordinateBox;
 import enums.edge_type;
+import model.CoordinateManager;
 import model.connection;
+import model.coordinate;
 import model.edge;
 import model.label;
 import model.network;
@@ -28,6 +32,8 @@ public class dijkstra {
 
 	private static LocalTime algorithm_start = null;
 	public static node target = null;
+	public static double density_computation_box_node_no = 3.0;
+	public static double considered_node_no_in_area = 15.0;
 	
 	public static void main(String args[]){
 		
@@ -59,6 +65,7 @@ public class dijkstra {
 		
 		ArrayList<node> a_star_path = null;
 		double path_len = 0;
+		ArrayList<HashMap<CoordinateBox, coordinate>> boxes = null;
 		
 		if(target != null){
 			a_star_path = 
@@ -67,13 +74,21 @@ public class dijkstra {
 			for (int i = 0; i < a_star_path.size() - 1; i++)
 				path_len += a_star_path.get(i).getCoordinate()
 						.getDistanceTo(a_star_path.get(i + 1).getCoordinate());
+			
+			ArrayList<Double> density = 
+					compute_path_density(a_star_path
+							, path_len, netw, density_computation_box_node_no);
+			
+			boxes = compute_path_boxes(a_star_path, density, considered_node_no_in_area);
 		}
 
 		while(!pq.isEmpty()){
 			label l = pq.poll();
 			node node = l.getNode();
 			for (edge e : node.getOutgoing_edges()) {
-				if(!check_heuristics(e.getEnd(), a_star_path, path_len))		// better performance by checking only some nodes
+				// if(!check_heuristics(e.getEnd(), a_star_path, path_len))		// better performance by checking only some nodes
+					// continue;
+				if(!check_heuristics(e.getEnd(), boxes))
 					continue;
 				if(!e.isFeasible()) continue;		// ignore this edge
 				label new_label = create_label(l, e, starttime);
@@ -87,6 +102,120 @@ public class dijkstra {
 		
 		report(netw, false);
 		algorithm_start = null;
+	}
+
+	/**
+	 * For each node on the a star path a bounding box will
+	 * be computed. The size of the box will be determined
+	 *  based on the given information about the density 
+	 *  of the node and the needed number of nodes to be considered
+	 *  in the box
+	 *  
+	 * @param a_star_path	the a star path of the nodes
+	 * @param density		the set of node densities
+	 * @param considered_node_no_in_area	needed number of the nodes in box
+	 * @return	a set of boxes for each node on the a star path
+	 * @see dijkstra
+	 */
+	private static ArrayList<HashMap<CoordinateBox, coordinate>> compute_path_boxes(
+			ArrayList<node> a_star_path, ArrayList<Double> density,
+			double considered_node_no_in_area) {
+		
+		ArrayList<HashMap<CoordinateBox, coordinate>> boxes =
+				new ArrayList<HashMap<CoordinateBox,coordinate>>();
+		
+		for (int i = 0; i < a_star_path.size(); i++) {
+			double needed_area = 1.0 / density.get(i)
+					* considered_node_no_in_area;
+			int size = (int)(Math.sqrt(needed_area) * 1000.0 / 2);
+			HashMap<CoordinateBox, coordinate> box = 
+					CoordinateManager.getBoundingBox(a_star_path.get(i).getLat(),
+					a_star_path.get(i).getLon(), size);
+			boxes.add(box);
+		}
+		
+		return boxes;
+	}
+
+	/**
+	 * For each node on the a star path a bounding box will
+	 * be created and the density in that box will be computed.
+	 * The size of the box depends on the path length and the
+	 * distance between the nodes on the path
+	 * 
+	 * @param a_star_path	the a star path of the nodes
+	 * @param path_len		the length of the a star path
+	 * @param node_number	the number of neighbor nodes included in box
+	 * @return	a set of densities computed for each node on the path
+	 * @see dijkstra
+	 */
+	private static ArrayList<Double> compute_path_density(
+			ArrayList<node> a_star_path, double path_len,
+			network netw, double node_number) {
+		
+		// compute the box size in meters
+		int box_size = (int)(node_number * path_len * 
+				1000.0 / a_star_path.size());
+		
+		node[] nodes = new node[netw.getNodes().size()];
+		nodes = netw.getNodes().toArray(nodes);
+		ArrayList<Double> densities = 
+				new ArrayList<Double>(Collections.nCopies(nodes.length, 0.0));
+		double area = 4 * Math.pow((double)box_size / 1000.0, 2);
+		int i = 0;
+		for (node node : a_star_path) {
+			HashMap<CoordinateBox, coordinate> box = 
+					CoordinateManager.getBoundingBox(node.getLat()
+							, node.getLon(), box_size);
+			for (node n : nodes)
+				if(isInBox(box, n))
+					densities.set(i, densities.get(i) + 1);
+			densities.set(i, densities.get(i) / area);
+			i++;
+		}
+		
+		return densities;
+	}
+
+	/**
+	 * Checks if the node n is inside the given bounding box
+	 * 
+	 * @param box	the coordinates of the box
+	 * @param n		the node to be checked
+	 * @return	a boolean value deciding if the node is in the box or not
+	 * @see dijkstra
+	 */
+	private static boolean isInBox(HashMap<CoordinateBox, coordinate> box,
+			node n) {
+		coordinate NE = box.get(CoordinateBox.NE);
+		coordinate NW = box.get(CoordinateBox.NW);
+		
+		float lon = n.getLon();
+		
+		boolean lon_ok = false;
+		
+		if(NE.getLongitude() > NW.getLongitude()
+				&& NE.getLongitude() >= lon
+				&& NW.getLongitude() <= lon)
+			lon_ok = true;
+		else if(NE.getLongitude() < NW.getLongitude()
+				&& NE.getLongitude() >= lon)
+			lon_ok = true;
+		else if(NE.getLongitude() > NW.getLongitude()
+				&& NW.getLongitude() <= lon)
+			lon_ok = true;
+		else
+			return lon_ok;
+		
+		coordinate SE = box.get(CoordinateBox.SE);
+		float lat = n.getLat();
+		
+		if(NE.getLatitude() > SE.getLatitude()
+				&& NE.getLatitude() >= lat
+				&& SE.getLatitude() <= lat)
+			return true;
+		
+		return false;
 	}
 
 	/**
@@ -189,17 +318,24 @@ public class dijkstra {
 	 * Checks the node at the end of edge e and decides if
 	 * it's meaningful to explore the node or note using
 	 * a given heuristic in distance
+	 * Here the heuristics are the existence of the node
+	 * inside of at least one of the area boxes of the 
+	 * nodes on the a star path
 	 * 
 	 * @param node	the start node of the edge
-	 * @param path	the path between the start nodes and target
-	 * @param path_len	the length of the path
+	 * @param boxes	the bounding boxes of the a star path
 	 * @return	a boolean value deciding whether the end node
 	 * 				should be explored or not
 	 * @see dijkstra
 	 */
-	private static boolean check_heuristics(node node, ArrayList<node> path, double path_len) {
+	private static boolean check_heuristics(node node, 
+			ArrayList<HashMap<CoordinateBox, coordinate>> boxes) {
 		
-		if(path == null)
+		for (HashMap<CoordinateBox, coordinate> box : boxes)
+			if(isInBox(box, node))
+				return true;
+		
+		/* if(path == null)
 			return true;
 		
 		for (int i = 0; i < path.size(); i++) {
@@ -208,6 +344,7 @@ public class dijkstra {
 					< compute_threshod(path_len, i, path.size()))
 				return true;
 		}
+		*/
 		return false;
 	}
 
@@ -224,10 +361,11 @@ public class dijkstra {
 	 * @param size		the size of the path (no. of nodes)
 	 * @return	an appropriate threshold
 	 * @see dijkstra
-	 */
+
 	private static double compute_threshod(double path_len, int i, int size) {
 		return path_len / 6.0;
 	}
+	*/
 
 	/**
 	 * Provides a reporting mechanism for the modified dijkstra
