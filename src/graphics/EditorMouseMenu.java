@@ -168,6 +168,7 @@ public class EditorMouseMenu {
 					Polygon poly = new Polygon(xPoly, yPoly, xPoly.length);
 					g.fillPolygon(poly);
 				}
+				Highlight_area = false;
 			}
 		};
 		vv.addPreRenderPaintable(paintable);
@@ -363,12 +364,12 @@ public class EditorMouseMenu {
 			}
 		});
 
-        JMenuItem item4 = new JMenuItem("Show/Hide search area highlight");
+        JMenuItem item4 = new JMenuItem("Show search area highlight");
         item4.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Highlight_area = ! Highlight_area;
+				Highlight_area = true;
 			}
 		});
         
