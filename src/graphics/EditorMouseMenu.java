@@ -39,6 +39,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -71,6 +73,19 @@ public class EditorMouseMenu {
     }
     
     public static void create_graph_visually(final network netw){
+    	
+    	/*try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}*/
+    	
         final JFrame frame = new JFrame("Editing and Mouse Menu Demo");
         
         GraphFactory.setNetw(netw);

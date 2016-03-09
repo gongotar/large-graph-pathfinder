@@ -79,6 +79,8 @@ public class dijkstra {
 					compute_path_density(a_star_path
 							, path_len, netw, density_computation_box_node_no);
 			
+			considered_node_no_in_area = path_len / 6.0;
+			
 			boxes = compute_path_boxes(a_star_path, density, considered_node_no_in_area);
 		}
 
